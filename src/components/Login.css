@@ -1,0 +1,752 @@
+/* ==========================================================================
+   Unique Arched Vault & Floating Glass Console Architecture
+   ========================================================================== */
+
+.login-page-container {
+  position: relative;
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 20px;
+  z-index: 1;
+}
+
+/* ==========================================================================
+   UNIQUE DESKTOP SHELL
+   Asymmetric, floating glass structure with no generic central split line.
+   ========================================================================== */
+.login-shell {
+  width: 100%;
+  max-width: 1060px;
+  background: rgba(30, 37, 54, 0.65);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(56, 189, 248, 0.15);
+  border-radius: 36px;
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.6),
+              0 0 80px rgba(56, 189, 248, 0.08);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 32px;
+  padding: 32px;
+  overflow: hidden;
+  position: relative;
+  animation: cardEnter 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Ambient inner glow accents */
+.login-shell::before {
+  content: '';
+  position: absolute;
+  top: -120px;
+  left: 20%;
+  width: 320px;
+  height: 320px;
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.18) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.login-shell::after {
+  content: '';
+  position: absolute;
+  bottom: -100px;
+  right: 15%;
+  width: 280px;
+  height: 280px;
+  background: radial-gradient(circle, rgba(129, 140, 248, 0.15) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* ==========================================================================
+   HERO PANEL: ARCHED VAULT / RETRO PORTAL
+   Distinctive arched window frame instead of generic rectangular photo box.
+   ========================================================================== */
+.hero-panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 24px;
+  height: 100%;
+  min-height: 520px;
+  z-index: 2;
+}
+
+.hero-brand-block {
+  margin-bottom: 20px;
+}
+
+.hero-brand-top {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.hero-logo-ring {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  padding: 2.5px;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  box-shadow: 0 0 20px var(--primary-glow);
+  flex-shrink: 0;
+  transition: transform var(--transition-bounce);
+}
+
+.hero-logo-ring:hover {
+  transform: rotate(8deg) scale(1.06);
+}
+
+.hero-brand-logo {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--surface);
+}
+
+.hero-brand-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--primary);
+  margin-bottom: 2px;
+}
+
+.hero-brand-title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 22px;
+  letter-spacing: 0.5px;
+  color: var(--text-main);
+  line-height: 1.1;
+}
+
+.hero-portal-subtitle {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 6px;
+  font-weight: 500;
+}
+
+/* Arched Portal Stage (Architectural Vault Window) */
+.hero-portal-stage {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 12px 0;
+}
+
+.hero-arch-window {
+  position: relative;
+  width: 100%;
+  max-width: 380px;
+  aspect-ratio: 16/11;
+  border-radius: 140px 140px 24px 24px; /* Iconic Arch Geometry */
+  overflow: hidden;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.7),
+              0 0 35px rgba(56, 189, 248, 0.16);
+  border: 1.5px solid rgba(56, 189, 248, 0.3);
+  animation: floatGentle 7s ease-in-out infinite;
+  background: var(--bg-deep);
+}
+
+.hero-arch-glow-border {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.hero-arch-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.hero-arch-window:hover .hero-arch-image {
+  transform: scale(1.05);
+}
+
+.hero-arch-gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(18, 24, 38, 0.1) 0%,
+    rgba(18, 24, 38, 0.25) 50%,
+    rgba(18, 24, 38, 0.85) 100%
+  );
+  pointer-events: none;
+}
+
+.hero-footer {
+  margin-top: 18px;
+}
+
+.hero-punchline {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-main);
+  line-height: 1.35;
+  margin-bottom: 6px;
+}
+
+.glow-cyan {
+  color: var(--primary);
+  text-shadow: 0 0 20px var(--primary-glow);
+}
+
+.glow-indigo {
+  color: var(--accent);
+  text-shadow: 0 0 20px var(--accent-glow);
+}
+
+.hero-description {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* ==========================================================================
+   FORM PANEL: ELEVATED FLOATING CONSOLE POD
+   ========================================================================== */
+.form-panel {
+  background: #1E2536;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 28px;
+  padding: 40px 36px;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.45);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+  z-index: 2;
+}
+
+/* Top Arch Banner for Mobile / Tablet (Curved Arch matching Image 1) */
+.mobile-brand-arch {
+  display: none;
+  position: relative;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 24px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.mobile-arch-backdrop {
+  position: absolute;
+  top: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 240px;
+  height: 80px;
+  background: radial-gradient(ellipse at bottom, rgba(56, 189, 248, 0.2), transparent 70%);
+  pointer-events: none;
+}
+
+.mobile-logo-ring {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  padding: 3px;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  box-shadow: 0 0 25px var(--primary-glow);
+  margin-bottom: 10px;
+}
+
+.mobile-logo-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--surface);
+}
+
+.mobile-title {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text-main);
+  letter-spacing: 0.5px;
+}
+
+.mobile-subtitle {
+  font-size: 12px;
+  color: var(--primary);
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-top: 3px;
+}
+
+/* Form Header */
+.form-header {
+  margin-bottom: 24px;
+}
+
+.form-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.form-title {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text-main);
+  letter-spacing: -0.3px;
+  line-height: 1.2;
+}
+
+.form-subtitle {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.lang-switcher-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--surface-input);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.lang-switcher-btn:hover {
+  color: var(--primary);
+  border-color: var(--primary);
+  background: var(--surface-input-focus);
+}
+
+/* Role Segmented Controller */
+.role-segmented-control {
+  display: flex;
+  background: var(--surface-input);
+  padding: 4px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  margin-bottom: 24px;
+}
+
+.role-tab-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  transition: all var(--transition-base);
+}
+
+.role-tab-btn:hover:not(.active) {
+  color: var(--text-main);
+}
+
+.role-tab-btn.active {
+  color: var(--text-inverse);
+  background: var(--primary);
+  box-shadow: 0 4px 16px var(--primary-glow);
+}
+
+.role-tab-btn.active.admin-mode {
+  background: var(--accent);
+  color: #FFFFFF;
+  box-shadow: 0 4px 16px var(--accent-glow);
+}
+
+/* ==========================================================================
+   INPUT FIELDS & MICRO-ANIMATIONS
+   ========================================================================== */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 7px;
+}
+
+.form-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-main);
+  margin-bottom: 7px;
+}
+
+.forgot-link {
+  font-size: 12px;
+  color: var(--primary);
+  font-weight: 500;
+  transition: opacity var(--transition-fast);
+}
+
+.forgot-link:hover {
+  text-decoration: underline;
+  opacity: 0.85;
+}
+
+.input-control {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: var(--surface-input);
+  border: 1.5px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 0 14px;
+  height: 50px;
+  transition: border-color var(--transition-base),
+              box-shadow var(--transition-base),
+              background-color var(--transition-base);
+  overflow: hidden;
+}
+
+/* Animated accent underline on focus */
+.input-control::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--primary), var(--accent));
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.input-control:hover {
+  border-color: var(--border-medium);
+  background: var(--surface-input-focus);
+}
+
+.input-control.is-focused {
+  border-color: var(--primary);
+  background: var(--surface-input-focus);
+  box-shadow: 0 0 0 3.5px var(--primary-glow);
+}
+
+.input-control.is-focused::after {
+  width: 100%;
+  left: 0;
+}
+
+.input-control.has-error {
+  border-color: var(--alert);
+  box-shadow: 0 0 0 3px var(--alert-bg);
+}
+
+.input-icon {
+  color: var(--text-subtle);
+  margin-right: 12px;
+  flex-shrink: 0;
+  transition: color var(--transition-base), transform var(--transition-bounce);
+}
+
+.input-control.is-focused .input-icon {
+  color: var(--primary);
+  transform: scale(1.12);
+}
+
+.text-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  color: var(--text-main);
+  height: 100%;
+}
+
+.text-input::placeholder {
+  color: var(--text-subtle);
+}
+
+.toggle-pw-btn {
+  color: var(--text-subtle);
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: color var(--transition-fast), transform var(--transition-fast);
+}
+
+.toggle-pw-btn:hover {
+  color: var(--text-main);
+  transform: scale(1.14);
+}
+
+.toggle-pw-btn:active {
+  transform: scale(0.9);
+}
+
+/* Alert Banner (#F87171 with Shake animation) */
+.alert-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 14px;
+  background: var(--alert-bg);
+  border: 1px solid var(--alert-border);
+  border-radius: var(--radius-sm);
+  color: var(--alert);
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 20px;
+  animation: shakeAlert 0.4s ease-in-out;
+}
+
+.alert-banner svg {
+  flex-shrink: 0;
+}
+
+/* Submit Action Button */
+.btn-submit {
+  width: 100%;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: var(--primary);
+  color: var(--text-inverse);
+  font-weight: 700;
+  font-size: 15px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-primary);
+  transition: transform var(--transition-fast),
+              box-shadow var(--transition-fast),
+              background-color var(--transition-fast);
+  position: relative;
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+.btn-submit:hover:not(:disabled) {
+  background: var(--primary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(56, 189, 248, 0.45);
+}
+
+.btn-submit:active:not(:disabled) {
+  transform: translateY(0) scale(0.985);
+  box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
+}
+
+.btn-submit:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.spinner {
+  animation: spin 0.8s linear infinite;
+}
+
+/* Light wave on button hover */
+.btn-submit::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.28), transparent);
+  transition: left 0.5s ease;
+}
+
+.btn-submit:hover::before {
+  left: 100%;
+}
+
+/* ==========================================================================
+   AUTHENTICATION SUCCESS MODAL
+   ========================================================================== */
+.success-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(11, 15, 25, 0.85);
+  backdrop-filter: blur(8px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: cardEnter 0.3s ease-out;
+}
+
+.success-modal-card {
+  width: 100%;
+  max-width: 440px;
+  background: var(--surface);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-xl);
+  padding: 32px 28px;
+  text-align: center;
+  box-shadow: var(--shadow-lg), 0 0 50px var(--primary-glow);
+}
+
+.success-icon-badge {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  margin: 0 auto 18px;
+  background: rgba(56, 189, 248, 0.15);
+  border: 2px solid var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+  box-shadow: 0 0 20px var(--primary-glow);
+  animation: pulseGlow 2s infinite;
+}
+
+.success-title {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 6px;
+}
+
+.success-role-badge {
+  display: inline-block;
+  padding: 4px 14px;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin-bottom: 16px;
+}
+
+.success-role-badge.admin {
+  background: rgba(129, 140, 248, 0.2);
+  color: var(--accent);
+  border: 1px solid var(--accent);
+}
+
+.success-role-badge.staff {
+  background: rgba(56, 189, 248, 0.2);
+  color: var(--primary);
+  border: 1px solid var(--primary);
+}
+
+.success-details-box {
+  background: var(--surface-input);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  margin-bottom: 20px;
+  text-align: left;
+  font-size: 13px;
+}
+
+.success-details-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+  color: var(--text-muted);
+}
+
+.success-details-row strong {
+  color: var(--text-main);
+}
+
+.btn-signout {
+  width: 100%;
+  height: 46px;
+  border-radius: var(--radius-md);
+  background: var(--surface-elevated);
+  border: 1px solid var(--border-medium);
+  color: var(--text-main);
+  font-weight: 600;
+  font-size: 14px;
+  transition: all var(--transition-fast);
+}
+
+.btn-signout:hover {
+  background: var(--alert-bg);
+  border-color: var(--alert);
+  color: var(--alert);
+}
+
+/* ==========================================================================
+   RESPONSIVE MEDIA QUERIES (Handphone & Tablet adaptation)
+   ========================================================================== */
+
+/* Tablet (max-width: 960px) */
+@media (max-width: 960px) {
+  .login-shell {
+    grid-template-columns: 1fr;
+    max-width: 520px;
+    padding: 24px;
+    gap: 0;
+    border-radius: 28px;
+  }
+
+  .hero-panel {
+    display: none; /* Collapses into MobileBrandArch */
+  }
+
+  .mobile-brand-arch {
+    display: flex;
+  }
+
+  .form-panel {
+    padding: 30px 24px;
+    border: none;
+    box-shadow: none;
+    background: transparent;
+  }
+}
+
+/* Mobile Handphone (max-width: 480px) */
+@media (max-width: 480px) {
+  .login-page-container {
+    padding: 16px 12px;
+  }
+
+  .login-shell {
+    padding: 20px 14px;
+    border-radius: 24px;
+    background: #1E2536;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .form-panel {
+    padding: 10px 4px;
+  }
+
+  .form-title {
+    font-size: 22px;
+  }
+
+  .mobile-logo-ring {
+    width: 64px;
+    height: 64px;
+  }
+}
