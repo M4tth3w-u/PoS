@@ -444,13 +444,15 @@
   background: var(--surface-input-focus);
 }
 
-.input-control.is-focused {
+.input-control.is-focused,
+.input-control:focus-within {
   border-color: var(--primary);
   background: var(--surface-input-focus);
   box-shadow: 0 0 0 3.5px var(--primary-glow);
 }
 
-.input-control.is-focused::after {
+.input-control.is-focused::after,
+.input-control:focus-within::after {
   width: 100%;
   left: 0;
 }
@@ -467,7 +469,8 @@
   transition: color var(--transition-base), transform var(--transition-bounce);
 }
 
-.input-control.is-focused .input-icon {
+.input-control.is-focused .input-icon,
+.input-control:focus-within .input-icon {
   color: var(--primary);
   transform: scale(1.12);
 }

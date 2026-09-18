@@ -218,8 +218,8 @@ export default function LoginForm({ lang, setLang, onLoginSuccess }) {
                 setPassword(e.target.value);
                 if (errorMessage) setErrorMessage('');
               }}
-              onFocus={() => setUserFocused(true)}
-              onBlur={() => setUserFocused(false)}
+              onFocus={() => setPassFocused(true)}
+              onBlur={() => setPassFocused(false)}
             />
             <button
               type="button"
