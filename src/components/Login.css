@@ -19,21 +19,11 @@
    ========================================================================== */
 .login-shell {
   width: 100%;
-  max-width: 1060px;
-  background: rgba(30, 37, 54, 0.65);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(56, 189, 248, 0.15);
-  border-radius: 36px;
-  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.6),
-              0 0 80px rgba(56, 189, 248, 0.08);
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  align-items: center;
-  gap: 32px;
-  padding: 32px;
-  overflow: hidden;
+  max-width: 450px;
+  display: flex;
+  justify-content: center;
   position: relative;
+  z-index: 2;
   animation: cardEnter 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
@@ -219,6 +209,7 @@
    FORM PANEL: ELEVATED FLOATING CONSOLE POD
    ========================================================================== */
 .form-panel {
+  width: 100%;
   background: #1E2536;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 28px;
@@ -701,55 +692,22 @@
    RESPONSIVE MEDIA QUERIES (Handphone & Tablet adaptation)
    ========================================================================== */
 
-/* Tablet (max-width: 960px) */
-@media (max-width: 960px) {
-  .login-shell {
-    grid-template-columns: 1fr;
-    max-width: 520px;
-    padding: 24px;
-    gap: 0;
-    border-radius: 28px;
-  }
-
-  .hero-panel {
-    display: none; /* Collapses into MobileBrandArch */
-  }
-
-  .mobile-brand-arch {
-    display: flex;
-  }
-
-  .form-panel {
-    padding: 30px 24px;
-    border: none;
-    box-shadow: none;
-    background: transparent;
-  }
-}
-
-/* Mobile Handphone (max-width: 480px) */
+/* Responsive adjustments */
 @media (max-width: 480px) {
   .login-page-container {
     padding: 16px 12px;
   }
 
   .login-shell {
-    padding: 20px 14px;
-    border-radius: 24px;
-    background: #1E2536;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    max-width: 100%;
   }
 
   .form-panel {
-    padding: 10px 4px;
+    padding: 28px 20px;
+    border-radius: 24px;
   }
 
   .form-title {
     font-size: 22px;
-  }
-
-  .mobile-logo-ring {
-    width: 64px;
-    height: 64px;
   }
 }

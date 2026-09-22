@@ -8,12 +8,9 @@ import {
   ArrowRight,
   Loader2,
   Globe,
-  ShieldCheck,
-  Briefcase,
 } from 'lucide-react';
 
 export default function LoginForm({ lang, setLang, onLoginSuccess }) {
-  const [role, setRole] = useState('staff'); // 'staff' | 'admin'
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -28,43 +25,26 @@ export default function LoginForm({ lang, setLang, onLoginSuccess }) {
     en: {
       title: 'Portal Sign In',
       subtitle: 'Enter your credentials to access the terminal.',
-      roleStaff: 'Staff / Cashier',
-      roleAdmin: 'Administrator',
       userLabel: 'Staff ID or Username',
-      userPlaceholder: role === 'admin' ? 'Enter admin ID...' : 'Enter staff ID...',
+      userPlaceholder: 'Enter your ID or username...',
       passLabel: 'Password',
       passPlaceholder: '••••••••',
-      forgot: 'Need assistance?',
-      btnSubmit: role === 'admin' ? 'Access Admin Console' : 'Open POS Terminal',
+      btnSubmit: 'Open POS Terminal',
       btnSubmitting: 'Authenticating...',
-      errEmpty: 'Please enter both your staff ID and password.',
-      errInvalid: 'Invalid credentials. Please verify your ID and password.',
+      errEmpty: 'Please enter both your ID and password.',
     },
     id: {
       title: 'Masuk Portal',
       subtitle: 'Masukkan akun Anda untuk membuka terminal.',
-      roleStaff: 'Staf / Kasir',
-      roleAdmin: 'Administrator',
       userLabel: 'ID Staf atau Username',
-      userPlaceholder: role === 'admin' ? 'Masukkan ID admin...' : 'Masukkan ID staf...',
+      userPlaceholder: 'Masukkan ID atau username...',
       passLabel: 'Kata Sandi',
       passPlaceholder: '••••••••',
-      forgot: 'Bantuan akun?',
-      btnSubmit: role === 'admin' ? 'Buka Konsol Admin' : 'Buka Terminal Kasir',
+      btnSubmit: 'Buka Terminal POS',
       btnSubmitting: 'Memverifikasi...',
-      errEmpty: 'Harap masukkan ID staf dan kata sandi.',
-      errInvalid: 'Kredensial tidak valid. Harap periksa ID dan kata sandi Anda.',
+      errEmpty: 'Harap masukkan ID dan kata sandi.',
     },
   }[lang];
-
-  const handleRoleChange = (newRole) => {
-    if (newRole !== role) {
-      setRole(newRole);
-      setUsername('');
-      setPassword('');
-      setErrorMessage('');
-    }
-  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -77,16 +57,13 @@ export default function LoginForm({ lang, setLang, onLoginSuccess }) {
 
     setIsSubmitting(true);
 
-    // Front-end login submit: passes payload to parent handler or API service
     if (onLoginSuccess) {
       onLoginSuccess({
         username: username.trim(),
         password: password,
-        role: role,
       });
     }
 
-    // Reset submitting state
     setTimeout(() => {
       setIsSubmitting(false);
     }, 400);
@@ -114,30 +91,6 @@ export default function LoginForm({ lang, setLang, onLoginSuccess }) {
         </div>
       </header>
 
-      {/* Role Segmented Controller (Staff vs Admin) */}
-      <div className="role-segmented-control" role="tablist" aria-label="Role selection">
-        <button
-          type="button"
-          role="tab"
-          aria-selected={role === 'staff'}
-          className={`role-tab-btn ${role === 'staff' ? 'active' : ''}`}
-          onClick={() => handleRoleChange('staff')}
-        >
-          <Briefcase size={16} />
-          <span>{t.roleStaff}</span>
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={role === 'admin'}
-          className={`role-tab-btn ${role === 'admin' ? 'active admin-mode' : ''}`}
-          onClick={() => handleRoleChange('admin')}
-        >
-          <ShieldCheck size={16} />
-          <span>{t.roleAdmin}</span>
-        </button>
-      </div>
-
       {/* Alert Banner for Errors (#F87171 with Shake animation) */}
       {errorMessage && (
         <div className="alert-banner" role="alert">
@@ -148,7 +101,7 @@ export default function LoginForm({ lang, setLang, onLoginSuccess }) {
 
       {/* Login Form */}
       <form onSubmit={handleSubmit} noValidate>
-        {/* Username / Staff ID Input (Image 2 inspired clean @ icon line) */}
+        {/* Username / Staff ID Input */}
         <div className="form-group">
           <label htmlFor="input-username" className="form-label">
             {t.userLabel}
@@ -180,25 +133,9 @@ export default function LoginForm({ lang, setLang, onLoginSuccess }) {
 
         {/* Password Input with Lock & Eye Toggle */}
         <div className="form-group">
-          <div className="form-label-row">
-            <label htmlFor="input-password" className="form-label">
-              {t.passLabel}
-            </label>
-            <a
-              href="#forgot"
-              className="forgot-link"
-              onClick={(e) => {
-                e.preventDefault();
-                alert(
-                  lang === 'en'
-                    ? 'Please contact your supervisor or IT administrator to reset your credentials.'
-                    : 'Silakan hubungi supervisor shift atau administrator TI untuk mereset akun Anda.'
-                );
-              }}
-            >
-              {t.forgot}
-            </a>
-          </div>
+          <label htmlFor="input-password" className="form-label">
+            {t.passLabel}
+          </label>
           <div
             className={`input-control ${passFocused ? 'is-focused' : ''} ${
               errorMessage ? 'has-error' : ''
