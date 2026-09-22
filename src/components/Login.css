@@ -689,6 +689,106 @@
 }
 
 /* ==========================================================================
+   ERROR POPUP MODAL
+   ========================================================================== */
+.error-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(11, 15, 25, 0.8);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: modalFadeIn 0.2s ease-out;
+}
+
+.error-modal-card {
+  width: 100%;
+  max-width: 380px;
+  background: #1E2536;
+  border: 1px solid rgba(248, 113, 113, 0.35);
+  border-radius: 24px;
+  padding: 32px 24px;
+  text-align: center;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7),
+              0 0 35px rgba(248, 113, 113, 0.15);
+  animation: modalScaleUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.error-icon-badge {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  margin: 0 auto 16px;
+  background: rgba(248, 113, 113, 0.12);
+  border: 2px solid var(--alert);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--alert);
+  box-shadow: 0 0 20px rgba(248, 113, 113, 0.25);
+}
+
+.error-modal-title {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 8px;
+}
+
+.error-modal-msg {
+  font-size: 14px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-bottom: 24px;
+  word-break: break-word;
+}
+
+.btn-modal-close {
+  width: 100%;
+  height: 46px;
+  border-radius: var(--radius-md);
+  background: var(--alert);
+  border: none;
+  color: #FFFFFF;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  box-shadow: 0 4px 14px rgba(248, 113, 113, 0.3);
+}
+
+.btn-modal-close:hover {
+  background: #EF4444;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(248, 113, 113, 0.45);
+}
+
+.btn-modal-close:active {
+  transform: translateY(0);
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modalScaleUp {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* ==========================================================================
    RESPONSIVE MEDIA QUERIES (Handphone & Tablet adaptation)
    ========================================================================== */
 

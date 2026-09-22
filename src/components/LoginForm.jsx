@@ -16,6 +16,7 @@ export default function LoginForm({ lang, setLang, onLoginSuccess }) {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [errorPopup, setErrorPopup] = useState('');
 
   // Active Focus tracking for smooth micro-animations
   const [userFocused, setUserFocused] = useState(false);
@@ -32,6 +33,11 @@ export default function LoginForm({ lang, setLang, onLoginSuccess }) {
       btnSubmit: 'Open POS Terminal',
       btnSubmitting: 'Authenticating...',
       errEmpty: 'Please enter both your ID and password.',
+      errInvalid: 'Invalid credentials. Please verify your ID and password.',
+      errServer: 'Server error. Please try again later.',
+      errNetwork: 'Unable to connect to server (http://localhost:8080).',
+      popupTitle: 'Login Failed',
+      popupClose: 'Dismiss',
     },
     id: {
       title: 'Masuk Portal',
@@ -43,10 +49,15 @@ export default function LoginForm({ lang, setLang, onLoginSuccess }) {
       btnSubmit: 'Buka Terminal POS',
       btnSubmitting: 'Memverifikasi...',
       errEmpty: 'Harap masukkan ID dan kata sandi.',
+      errInvalid: 'Kredensial tidak valid. Harap periksa ID dan kata sandi Anda.',
+      errServer: 'Terjadi kesalahan server. Silakan coba lagi.',
+      errNetwork: 'Gagal terhubung ke server (http://localhost:8080).',
+      popupTitle: 'Login Gagal',
+      popupClose: 'Tutup',
     },
   }[lang];
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage('');
 
@@ -57,16 +68,43 @@ export default function LoginForm({ lang, setLang, onLoginSuccess }) {
 
     setIsSubmitting(true);
 
-    if (onLoginSuccess) {
-      onLoginSuccess({
-        username: username.trim(),
-        password: password,
+    try {
+      const response = await fetch('http://localhost:8080/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: username.trim(),
+          password: password,
+        }),
       });
-    }
 
-    setTimeout(() => {
+      let data = null;
+      try {
+        data = await response.json();
+      } catch {
+        // response may not be JSON
+      }
+
+      if (!response.ok) {
+        const errorMsg =
+          data?.message ||
+          (response.status === 401 ? t.errInvalid : t.errServer);
+        setErrorMessage(errorMsg);
+        setErrorPopup(errorMsg);
+        return;
+      }
+
+      if (onLoginSuccess) {
+        onLoginSuccess(data || { username: username.trim() });
+      }
+    } catch {
+      setErrorMessage(t.errNetwork);
+      setErrorPopup(t.errNetwork);
+    } finally {
       setIsSubmitting(false);
-    }, 400);
+    }
   };
 
   return (
@@ -190,6 +228,38 @@ export default function LoginForm({ lang, setLang, onLoginSuccess }) {
           )}
         </button>
       </form>
+
+      {/* Simple Error Popup Modal */}
+      {errorPopup && (
+        <div
+          className="error-modal-backdrop"
+          onClick={() => setErrorPopup('')}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="error-modal-title"
+        >
+          <div
+            className="error-modal-card"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="error-icon-badge">
+              <AlertCircle size={28} />
+            </div>
+            <h3 id="error-modal-title" className="error-modal-title">
+              {t.popupTitle}
+            </h3>
+            <p className="error-modal-msg">{errorPopup}</p>
+            <button
+              type="button"
+              className="btn-modal-close"
+              onClick={() => setErrorPopup('')}
+              autoFocus
+            >
+              {t.popupClose}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
