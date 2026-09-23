@@ -31,6 +31,62 @@ export default function AdminView({ user, onLogout }) {
       return [];
     }
   });
+  const [accountsLoading, setAccountsLoading] = useState(false);
+  const [accountsError, setAccountsError] = useState('');
+
+  const loadAccounts = async () => {
+      setAccountsLoading(true);
+      setAccountsError('');
+
+      try {
+        const response = await fetch('/admin/user', {
+          method: 'GET',
+          credentials: 'include',
+          headers: {
+            Accept: 'application/json',
+          },
+        });
+        const responseText = await response.text();
+        let responseData = null;
+
+        try {
+          responseData = responseText ? JSON.parse(responseText) : null;
+        } catch {
+          throw new Error('Respons server bukan JSON yang valid.');
+        }
+
+        if (!response.ok) {
+          throw new Error(responseData?.message || 'Gagal mengambil data akun.');
+        }
+
+        const accountList = Array.isArray(responseData)
+          ? responseData
+          : responseData?.data?.users ||
+            responseData?.data ||
+            responseData?.users ||
+            [];
+
+        if (!Array.isArray(accountList)) {
+          throw new Error('Format data akun dari server tidak valid.');
+        }
+
+        setAccounts(
+          accountList.map((account) => ({
+            ...account,
+            id: account.id ?? account.id_user,
+          }))
+        );
+      } catch (error) {
+        setAccountsError(error.message || 'Gagal mengambil data akun.');
+      } finally {
+        setAccountsLoading(false);
+      }
+  };
+
+  useEffect(() => {
+    if (activeTab !== 'accounts') return;
+    loadAccounts();
+  }, [activeTab]);
 
   // Sync state with local storage for frontend operational persistence
   useEffect(() => {
@@ -81,20 +137,76 @@ export default function AdminView({ user, onLogout }) {
   };
 
   // Account CRUD Handlers
-  const handleSaveAccount = (accData) => {
-    setAccounts((prev) => {
-      const exists = prev.some((a) => a.id === accData.id);
-      if (exists) {
-        return prev.map((a) => (a.id === accData.id ? accData : a));
+  const handleSaveAccount = async (accData) => {
+    setAccountsLoading(true);
+    setAccountsError('');
+
+    try {
+      const payload = {
+        username: accData.username,
+        id_role: accData.id_role,
+        status: accData.status,
+      };
+
+      if (accData.id) {
+        payload.id_user = accData.id;
       }
-      return [accData, ...prev];
-    });
-    setAccountModal({ isOpen: false, account: null });
+
+      if (accData.password) {
+        payload.password = accData.password;
+      }
+
+      const response = await fetch('/admin/users/save', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+      const responseData = await response.json();
+
+      if (!response.ok || responseData?.success === false) {
+        throw new Error(responseData?.message || 'Gagal menyimpan akun.');
+      }
+
+      setAccountModal({ isOpen: false, account: null });
+      await loadAccounts();
+    } catch (error) {
+      setAccountsError(error.message || 'Gagal menyimpan akun.');
+      setAccountsLoading(false);
+    }
   };
 
-  const handleDeleteAccount = (accId) => {
-    if (window.confirm('Are you sure you want to delete this staff account?')) {
-      setAccounts((prev) => prev.filter((a) => a.id !== accId));
+  const handleDeleteAccount = async (accId) => {
+    if (!window.confirm('Are you sure you want to delete this staff account?')) {
+      return;
+    }
+
+    setAccountsLoading(true);
+    setAccountsError('');
+
+    try {
+      const response = await fetch('/admin/users/delete', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify({ id_user: accId, id: accId }),
+      });
+      const responseData = await response.json();
+
+      if (!response.ok || responseData?.success === false) {
+        throw new Error(responseData?.message || 'Gagal menghapus akun.');
+      }
+
+      await loadAccounts();
+    } catch (error) {
+      setAccountsError(error.message || 'Gagal menghapus akun.');
+      setAccountsLoading(false);
     }
   };
 
@@ -143,6 +255,8 @@ export default function AdminView({ user, onLogout }) {
           {activeTab === 'accounts' && (
             <AccountManagementTab
               accounts={accounts}
+              isLoading={accountsLoading}
+              errorMessage={accountsError}
               onOpenAddModal={() => setAccountModal({ isOpen: true, account: null })}
               onOpenEditModal={(acc) => setAccountModal({ isOpen: true, account: acc })}
               onDeleteAccount={handleDeleteAccount}

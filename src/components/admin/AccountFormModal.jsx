@@ -14,9 +14,9 @@ export default function AccountFormModal({ initialData, onClose, onSave }) {
     if (!username.trim()) return;
 
     onSave({
-      id: initialData?.id || Date.now().toString(),
+      ...(isEditing ? { id: initialData.id } : {}),
       username: username.trim(),
-      password: password ? password : initialData?.password,
+      password,
       id_role: Number(role),
       roleName: Number(role) === 1 ? 'Admin' : 'Cashier',
       status,

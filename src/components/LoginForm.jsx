@@ -69,16 +69,15 @@ export default function LoginForm({ lang, setLang, onLoginSuccess }) {
     setIsSubmitting(true);
 
     try {
-      const formPayload = new URLSearchParams();
-      formPayload.append('username', username.trim());
-      formPayload.append('password', password);
-
       const response = await fetch('/auth/action_login', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
+          'Content-Type': 'application/json',
         },
-        body: formPayload.toString(),
+        body: JSON.stringify({
+          username: username.trim(),
+          password,
+        }),
       });
 
       let data = null;

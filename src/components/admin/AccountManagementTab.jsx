@@ -11,6 +11,8 @@ import {
 
 export default function AccountManagementTab({
   accounts,
+  isLoading,
+  errorMessage,
   onOpenAddModal,
   onOpenEditModal,
   onDeleteAccount,
@@ -33,6 +35,9 @@ export default function AccountManagementTab({
 
   return (
     <div className="account-management-tab">
+      {isLoading && <p>Loading accounts...</p>}
+      {errorMessage && <p role="alert">{errorMessage}</p>}
+
       {/* Top Toolbar */}
       <div className="toolbar-container">
         <div className="toolbar-search-wrap">
@@ -61,6 +66,7 @@ export default function AccountManagementTab({
           type="button"
           className="btn-primary-action"
           onClick={onOpenAddModal}
+          disabled={isLoading}
         >
           <UserPlus size={18} />
           <span>Create Staff Account</span>
