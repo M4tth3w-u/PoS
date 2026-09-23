@@ -1,10 +1,11 @@
 import React from 'react';
-import { LayoutDashboard, UtensilsCrossed, Users, LogOut } from 'lucide-react';
+import { LayoutDashboard, CircleDot, UtensilsCrossed, Users, LogOut } from 'lucide-react';
 
 export default function AdminBottomNav({ activeTab, setActiveTab, onLogout }) {
   const tabs = [
     { id: 'overview', label: 'Overview', icon: LayoutDashboard },
-    { id: 'food', label: 'Food & Stock', icon: UtensilsCrossed },
+    { id: 'tables', label: 'Tables', icon: CircleDot },
+    { id: 'food', label: 'Food', icon: UtensilsCrossed },
     { id: 'accounts', label: 'Accounts', icon: Users },
   ];
 

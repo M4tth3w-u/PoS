@@ -5,6 +5,8 @@ export default function AdminHeader({ activeTab }) {
     switch (activeTab) {
       case 'overview':
         return 'Dashboard & Operations';
+      case 'tables':
+        return 'Billiard Tables Management';
       case 'food':
         return 'Food & Stock Inventory';
       case 'accounts':

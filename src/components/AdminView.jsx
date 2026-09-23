@@ -4,11 +4,13 @@ import AdminSidebar from './admin/AdminSidebar';
 import AdminBottomNav from './admin/AdminBottomNav';
 import AdminHeader from './admin/AdminHeader';
 import OverviewTab from './admin/OverviewTab';
+import TableManagementTab from './admin/TableManagementTab';
 import FoodManagementTab from './admin/FoodManagementTab';
 import AccountManagementTab from './admin/AccountManagementTab';
 import ResupplyModal from './admin/ResupplyModal';
 import FoodFormModal from './admin/FoodFormModal';
 import AccountFormModal from './admin/AccountFormModal';
+import TableFormModal from './admin/TableFormModal';
 
 export default function AdminView({ user, onLogout }) {
   const [activeTab, setActiveTab] = useState('overview');
@@ -18,6 +20,77 @@ export default function AdminView({ user, onLogout }) {
     try {
       const saved = localStorage.getItem('pos_foods');
       return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [tables, setTables] = useState(() => {
+    try {
+      const saved = localStorage.getItem('pos_tables');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return parsed.map((t) => ({
+          ...t,
+          status: t.status === 'Maintenance' ? 'Maintenance' : 'Ready',
+        }));
+      }
+      return [
+        {
+          id: 'tbl-1',
+          tableNumber: 'Table 01',
+          type: 'Standard (9ft)',
+          hourlyRate: 35000,
+          status: 'Ready',
+          location: 'Main Floor - Area A',
+          specifications: 'Tournament Slate & Simonis Cloth',
+        },
+        {
+          id: 'tbl-2',
+          tableNumber: 'Table 02',
+          type: 'Standard (9ft)',
+          hourlyRate: 35000,
+          status: 'Ready',
+          location: 'Main Floor - Area A',
+          specifications: 'Tournament Slate & Simonis Cloth',
+        },
+        {
+          id: 'tbl-3',
+          tableNumber: 'Table 03',
+          type: 'Standard (9ft)',
+          hourlyRate: 35000,
+          status: 'Ready',
+          location: 'Main Floor - Area B',
+          specifications: 'Tournament Slate & Standard Cloth',
+        },
+        {
+          id: 'tbl-4',
+          tableNumber: 'Table 04',
+          type: 'Standard (9ft)',
+          hourlyRate: 35000,
+          status: 'Maintenance',
+          location: 'Main Floor - Area B',
+          specifications: 'Pending Cloth Replacement',
+        },
+        {
+          id: 'tbl-5',
+          tableNumber: 'VIP Table 01',
+          type: 'VIP Room',
+          hourlyRate: 50000,
+          status: 'Ready',
+          location: '2nd Floor VIP Lounge',
+          specifications: 'Rasson Magnum Table & Simonis 860',
+        },
+        {
+          id: 'tbl-6',
+          tableNumber: 'VVIP Suite 01',
+          type: 'VVIP Suite',
+          hourlyRate: 75000,
+          status: 'Ready',
+          location: 'Private Room 1',
+          specifications: 'Diamond Pro-Am 9ft & Cyclop Hyperion',
+        },
+      ];
     } catch {
       return [];
     }
@@ -99,6 +172,14 @@ export default function AdminView({ user, onLogout }) {
 
   useEffect(() => {
     try {
+      localStorage.setItem('pos_tables', JSON.stringify(tables));
+    } catch (err) {
+      console.error('Failed to persist tables', err);
+    }
+  }, [tables]);
+
+  useEffect(() => {
+    try {
       localStorage.setItem('pos_accounts', JSON.stringify(accounts));
     } catch (err) {
       console.error('Failed to persist accounts', err);
@@ -109,6 +190,37 @@ export default function AdminView({ user, onLogout }) {
   const [resupplyItem, setResupplyItem] = useState(null);
   const [foodModal, setFoodModal] = useState({ isOpen: false, item: null });
   const [accountModal, setAccountModal] = useState({ isOpen: false, account: null });
+  const [tableModal, setTableModal] = useState({ isOpen: false, table: null });
+
+  // Billiard Table CRUD Handlers
+  const handleSaveTable = (tableData) => {
+    setTables((prev) => {
+      const exists = prev.some((t) => t.id === tableData.id);
+      if (exists) {
+        return prev.map((t) => (t.id === tableData.id ? tableData : t));
+      }
+      return [tableData, ...prev];
+    });
+    setTableModal({ isOpen: false, table: null });
+  };
+
+  const handleDeleteTable = (tableId) => {
+    if (window.confirm('Are you sure you want to remove this billiard table?')) {
+      setTables((prev) => prev.filter((t) => t.id !== tableId));
+    }
+  };
+
+  const handleQuickToggleTableStatus = (tableId) => {
+    setTables((prev) =>
+      prev.map((t) => {
+        if (t.id === tableId) {
+          const nextStatus = t.status === 'Maintenance' ? 'Ready' : 'Maintenance';
+          return { ...t, status: nextStatus };
+        }
+        return t;
+      })
+    );
+  };
 
   // Stock Resupply Handler
   const handleConfirmResupply = (foodId, addQuantity) => {
@@ -237,8 +349,19 @@ export default function AdminView({ user, onLogout }) {
             <OverviewTab
               foods={foods}
               accounts={accounts}
+              tables={tables}
               onOpenResupply={setResupplyItem}
               onNavigateTab={setActiveTab}
+            />
+          )}
+
+          {activeTab === 'tables' && (
+            <TableManagementTab
+              tables={tables}
+              onOpenAddModal={() => setTableModal({ isOpen: true, table: null })}
+              onOpenEditModal={(table) => setTableModal({ isOpen: true, table })}
+              onDeleteTable={handleDeleteTable}
+              onQuickToggleStatus={handleQuickToggleTableStatus}
             />
           )}
 
@@ -294,6 +417,14 @@ export default function AdminView({ user, onLogout }) {
           initialData={accountModal.account}
           onClose={() => setAccountModal({ isOpen: false, account: null })}
           onSave={handleSaveAccount}
+        />
+      )}
+
+      {tableModal.isOpen && (
+        <TableFormModal
+          initialData={tableModal.table}
+          onClose={() => setTableModal({ isOpen: false, table: null })}
+          onSave={handleSaveTable}
         />
       )}
     </div>

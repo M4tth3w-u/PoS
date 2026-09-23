@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  CircleDot,
   Boxes,
   AlertTriangle,
   Users,
@@ -14,45 +15,50 @@ import {
 export default function OverviewTab({
   foods,
   accounts,
+  tables = [],
   onOpenResupply,
   onNavigateTab,
 }) {
   const lowStockItems = foods.filter((f) => f.stock <= 5);
   const outOfStockItems = foods.filter((f) => f.stock === 0);
+  const readyTables = tables.filter((t) => t.status === 'Ready' || t.status === 'Available');
+  const maintenanceTables = tables.filter((t) => t.status === 'Maintenance');
 
   return (
     <div className="overview-tab-content">
       {/* 3 Executive KPI Cards */}
       <div className="overview-grid">
-        {/* Total Menu Dishes */}
+        {/* Total Billiard Tables */}
         <div
           className="kpi-card"
-          onClick={() => onNavigateTab('food')}
+          onClick={() => onNavigateTab('tables')}
           style={{ cursor: 'pointer' }}
           role="button"
           tabIndex={0}
         >
           <div className="kpi-top-row">
             <div className="kpi-icon-badge cyan">
-              <Boxes size={22} />
+              <CircleDot size={22} />
             </div>
             <span className="kpi-trend-pill positive">
-              <TrendingUp size={12} /> Live Menu
+              <TrendingUp size={12} /> Venue Fleet
             </span>
           </div>
           <div className="kpi-info">
-            <span className="kpi-label">Active Menu Items</span>
-            <span className="kpi-value">{foods.length} Dishes</span>
+            <span className="kpi-label">Billiard Tables</span>
+            <span className="kpi-value">{tables.length} Tables</span>
             <div className="kpi-bar-track">
               <div
                 className="kpi-bar-fill"
                 style={{
-                  width: `${Math.min(100, foods.length * 10)}%`,
+                  width: `${Math.min(100, tables.length * 15)}%`,
                   background: 'var(--primary)',
                 }}
               />
             </div>
-            <span className="kpi-subtext">Across kitchen & beverage catalog</span>
+            <span className="kpi-subtext">
+              {readyTables.length} ready / available &bull; {maintenanceTables.length} under maintenance
+            </span>
           </div>
         </div>
 

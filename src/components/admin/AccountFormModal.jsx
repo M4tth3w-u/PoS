@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { X, UserPlus, Shield } from 'lucide-react';
+import { X, UserPlus, Shield, Eye, EyeOff } from 'lucide-react';
 
 export default function AccountFormModal({ initialData, onClose, onSave }) {
   const isEditing = Boolean(initialData?.id);
 
   const [username, setUsername] = useState(initialData?.username || '');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [role, setRole] = useState(initialData?.id_role ? String(initialData.id_role) : '2'); // 1 = Admin, 2 = Cashier
   const [status, setStatus] = useState(initialData?.status || 'Active');
 
@@ -59,14 +60,26 @@ export default function AccountFormModal({ initialData, onClose, onSave }) {
             <label className="modal-label">
               {isEditing ? 'Password (leave blank to keep current)' : 'Password'}
             </label>
-            <input
-              type="password"
-              className="modal-input"
-              placeholder={isEditing ? '••••••••' : 'Enter login password'}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required={!isEditing}
-            />
+            <div className="modal-password-wrap">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                className="modal-input modal-input-password"
+                placeholder={isEditing ? '••••••••' : 'Enter login password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required={!isEditing}
+              />
+              <button
+                type="button"
+                className="btn-password-toggle"
+                onClick={() => setShowPassword(!showPassword)}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                title={showPassword ? 'Hide password' : 'Show password'}
+                tabIndex={-1}
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
           </div>
 
           {/* Role & Status */}
