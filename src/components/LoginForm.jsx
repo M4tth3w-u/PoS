@@ -69,38 +69,57 @@ export default function LoginForm({ lang, setLang, onLoginSuccess }) {
     setIsSubmitting(true);
 
     try {
+      const formPayload = new URLSearchParams();
+      formPayload.append('username', username.trim());
+      formPayload.append('password', password);
+
       const response = await fetch('/auth/action_login', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: JSON.stringify({
-          username: username.trim(),
-          password: password,
-        }),
+        body: formPayload.toString(),
       });
 
       let data = null;
       try {
         data = await response.json();
       } catch {
-        // response may not be JSON
+        // response may not be JSON (e.g. CI4 redirect/HTML response)
       }
 
-      const loginFailed = !response.ok || data?.success === false;
+      const resUrl = response.url || '';
+      const isCiAdmin = resUrl.includes('/admin');
+      const isCiCashier = resUrl.includes('/cashier');
+      const isCiRejected = response.redirected && !isCiAdmin && !isCiCashier;
+
+      const loginFailed = !response.ok || data?.success === false || isCiRejected;
 
       if (loginFailed) {
         const errorMsg =
           data?.message ||
           data?.error ||
-          (response.status === 401 ? t.errInvalid : t.errServer);
+          (response.status === 401 || isCiRejected ? t.errInvalid : t.errServer);
         setErrorMessage(errorMsg);
         setErrorPopup(errorMsg);
         return;
       }
 
       if (onLoginSuccess) {
-        const loginData = data ?? { username: username.trim() };
+        let role = data?.data?.id_role || (data?.id_role ? data.id_role : null);
+        if (!role) {
+          if (isCiAdmin) role = 1;
+          else if (isCiCashier) role = 2;
+        }
+
+        const loginData = data?.data
+          ? data
+          : {
+              data: {
+                username: username.trim(),
+                id_role: role || 1,
+              },
+            };
         onLoginSuccess(loginData);
       }
     } catch {

@@ -495,6 +495,26 @@
   font-size: 14px;
   color: var(--text-main);
   height: 100%;
+  color-scheme: dark;
+}
+
+/* Chrome, Edge, Safari Dark Mode Autofill Override */
+.text-input:-webkit-autofill,
+.text-input:-webkit-autofill:hover {
+  -webkit-box-shadow: 0 0 0 1000px var(--surface-input, #141b2b) inset !important;
+  box-shadow: 0 0 0 1000px var(--surface-input, #141b2b) inset !important;
+  -webkit-text-fill-color: var(--text-main, #e2e8f0) !important;
+  caret-color: var(--text-main, #e2e8f0) !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+.text-input:-webkit-autofill:focus,
+.text-input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px var(--surface-input-focus, #182135) inset !important;
+  box-shadow: 0 0 0 1000px var(--surface-input-focus, #182135) inset !important;
+  -webkit-text-fill-color: var(--text-main, #e2e8f0) !important;
+  caret-color: var(--text-main, #e2e8f0) !important;
+  transition: background-color 5000s ease-in-out 0s;
 }
 
 .text-input::placeholder {

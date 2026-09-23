@@ -7,11 +7,11 @@ function App() {
   const [loginResponse, setLoginResponse] = useState(null);
 
   if (loginResponse?.data?.id_role === 1 || loginResponse?.data?.id_role === '1') {
-    return <AdminView user={loginResponse.data} />;
+    return <AdminView user={loginResponse.data} onLogout={() => setLoginResponse(null)} />;
   }
 
   if (loginResponse?.data?.id_role === 2 || loginResponse?.data?.id_role === '2') {
-    return <CashierView user={loginResponse.data} />;
+    return <CashierView user={loginResponse.data} onLogout={() => setLoginResponse(null)} />;
   }
 
   return <LoginView onLogin={setLoginResponse} />;

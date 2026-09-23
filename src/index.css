@@ -10,6 +10,7 @@
    ========================================================================== */
 
 :root {
+  color-scheme: dark;
   --bg-main: #121826;
   --bg-deep: #0B0F19;
   --surface: #1E2536;
@@ -80,7 +81,7 @@ html, body {
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 #root {
