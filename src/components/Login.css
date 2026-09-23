@@ -13,6 +13,27 @@
   z-index: 1;
 }
 
+.role-view {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  color: var(--text-main);
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.role-view p,
+.role-view span {
+  grid-column: 1;
+  text-align: center;
+}
+
+.role-view span {
+  margin-top: 56px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
 /* ==========================================================================
    UNIQUE DESKTOP SHELL
    Asymmetric, floating glass structure with no generic central split line.
