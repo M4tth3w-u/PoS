@@ -5,6 +5,7 @@ import {
   Eye,
   EyeOff,
   AlertCircle,
+  CheckCircle,
   ArrowRight,
   Loader2,
   Globe,
@@ -17,6 +18,7 @@ export default function LoginForm({ lang, setLang, onLoginSuccess }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [errorPopup, setErrorPopup] = useState('');
+  const [authenticatedUser, setAuthenticatedUser] = useState(null);
 
   // Active Focus tracking for smooth micro-animations
   const [userFocused, setUserFocused] = useState(false);
@@ -36,6 +38,9 @@ export default function LoginForm({ lang, setLang, onLoginSuccess }) {
       errInvalid: 'Invalid credentials. Please verify your ID and password.',
       errServer: 'Server error. Please try again later.',
       errNetwork: 'Unable to connect to server (http://localhost:8080).',
+      successTitle: 'Login Successful',
+      successMessage: 'Your credentials have been verified.',
+      successClose: 'Continue',
       popupTitle: 'Login Failed',
       popupClose: 'Dismiss',
     },
@@ -52,6 +57,9 @@ export default function LoginForm({ lang, setLang, onLoginSuccess }) {
       errInvalid: 'Kredensial tidak valid. Harap periksa ID dan kata sandi Anda.',
       errServer: 'Terjadi kesalahan server. Silakan coba lagi.',
       errNetwork: 'Gagal terhubung ke server (http://localhost:8080).',
+      successTitle: 'Login Berhasil',
+      successMessage: 'Kredensial Anda telah berhasil diverifikasi.',
+      successClose: 'Lanjutkan',
       popupTitle: 'Login Gagal',
       popupClose: 'Tutup',
     },
@@ -69,7 +77,7 @@ export default function LoginForm({ lang, setLang, onLoginSuccess }) {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('http://localhost:8080/login', {
+      const response = await fetch('/auth/action_login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -87,9 +95,12 @@ export default function LoginForm({ lang, setLang, onLoginSuccess }) {
         // response may not be JSON
       }
 
-      if (!response.ok) {
+      const loginFailed = !response.ok || data?.success === false;
+
+      if (loginFailed) {
         const errorMsg =
           data?.message ||
+          data?.error ||
           (response.status === 401 ? t.errInvalid : t.errServer);
         setErrorMessage(errorMsg);
         setErrorPopup(errorMsg);
@@ -97,7 +108,9 @@ export default function LoginForm({ lang, setLang, onLoginSuccess }) {
       }
 
       if (onLoginSuccess) {
-        onLoginSuccess(data || { username: username.trim() });
+        const loginData = data ?? { username: username.trim() };
+        setAuthenticatedUser(loginData);
+        onLoginSuccess(loginData);
       }
     } catch {
       setErrorMessage(t.errNetwork);
@@ -228,6 +241,39 @@ export default function LoginForm({ lang, setLang, onLoginSuccess }) {
           )}
         </button>
       </form>
+
+      {authenticatedUser && (
+        <div className="success-modal-backdrop" role="dialog" aria-modal="true">
+          <div className="success-modal-card">
+            <div className="success-icon-badge">
+              <CheckCircle size={32} />
+            </div>
+            <h3 className="success-title">{t.successTitle}</h3>
+            <p className="error-modal-msg">{t.successMessage}</p>
+            <div className="success-details-box">
+              <div className="success-details-row">
+                <span>{t.userLabel}</span>
+                <strong>
+                  {authenticatedUser.username || username.trim()}
+                </strong>
+              </div>
+              {authenticatedUser.role && (
+                <div className="success-details-row">
+                  <span>Role</span>
+                  <strong>{authenticatedUser.role}</strong>
+                </div>
+              )}
+            </div>
+            <button
+              type="button"
+              className="btn-signout"
+              onClick={() => setAuthenticatedUser(null)}
+            >
+              {t.successClose}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Simple Error Popup Modal */}
       {errorPopup && (
