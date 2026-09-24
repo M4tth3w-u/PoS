@@ -1,11 +1,9 @@
 import React from 'react';
 import {
   CircleDot,
-  Boxes,
   AlertTriangle,
   Users,
   CheckCircle2,
-  PackagePlus,
   TrendingUp,
   Shield,
   Clock,
@@ -16,11 +14,9 @@ export default function OverviewTab({
   foods,
   accounts,
   tables = [],
-  onOpenResupply,
   onNavigateTab,
 }) {
-  const lowStockItems = foods.filter((f) => f.stock <= 5);
-  const outOfStockItems = foods.filter((f) => f.stock === 0);
+  const unavailableFoods = foods.filter((food) => !food.isAvailable);
   const readyTables = tables.filter((t) => t.status === 'Ready' || t.status === 'Available');
   const maintenanceTables = tables.filter((t) => t.status === 'Maintenance');
 
@@ -62,7 +58,7 @@ export default function OverviewTab({
           </div>
         </div>
 
-        {/* Low Stock Radar */}
+        {/* Food Availability */}
         <div
           className="kpi-card"
           onClick={() => onNavigateTab('food')}
@@ -76,21 +72,21 @@ export default function OverviewTab({
             </div>
             <span
               className={`kpi-trend-pill ${
-                lowStockItems.length > 0 ? 'negative' : 'positive'
+                unavailableFoods.length > 0 ? 'negative' : 'positive'
               }`}
             >
-              {lowStockItems.length > 0 ? 'Restock Needed' : 'Good Reserve'}
+              {unavailableFoods.length > 0 ? 'Attention Needed' : 'All Available'}
             </span>
           </div>
           <div className="kpi-info">
-            <span className="kpi-label">Low Stock Alerts</span>
+            <span className="kpi-label">Food Availability</span>
             <span
               className="kpi-value"
               style={{
-                color: lowStockItems.length > 0 ? 'var(--alert)' : '#ffffff',
+                color: unavailableFoods.length > 0 ? 'var(--alert)' : '#ffffff',
               }}
             >
-              {lowStockItems.length} Items
+              {unavailableFoods.length} Unavailable
             </span>
             <div className="kpi-bar-track">
               <div
@@ -98,16 +94,16 @@ export default function OverviewTab({
                 style={{
                   width: `${Math.min(
                     100,
-                    (lowStockItems.length / Math.max(1, foods.length)) * 100
+                    (unavailableFoods.length / Math.max(1, foods.length)) * 100
                   )}%`,
                   background: 'var(--alert)',
                 }}
               />
             </div>
             <span className="kpi-subtext">
-              {outOfStockItems.length > 0
-                ? `${outOfStockItems.length} items currently out of stock`
-                : 'Inventory items with ≤ 5 units'}
+              {unavailableFoods.length > 0
+                ? `${unavailableFoods.length} food items unavailable`
+                : 'All food items are available'}
             </span>
           </div>
         </div>
@@ -160,14 +156,14 @@ export default function OverviewTab({
         </div>
       </div>
 
-      {/* Dual Operational Hub: Left Priority Restock Radar | Right Registered Staff Access */}
+      {/* Dual Operational Hub: Left Food Availability | Right Registered Staff Access */}
       <div className="overview-dual-grid">
-        {/* Left Column: Priority Restock Attention Radar */}
+        {/* Left Column: Food Availability */}
         <div className="overview-panel-card">
           <div className="panel-header-row">
             <div className="panel-header-title">
               <AlertTriangle size={18} color="var(--alert)" />
-              <h3>Priority Restock Radar</h3>
+              <h3>Food Availability</h3>
             </div>
             <button
               type="button"
@@ -179,23 +175,17 @@ export default function OverviewTab({
             </button>
           </div>
 
-          {lowStockItems.length === 0 ? (
+          {unavailableFoods.length === 0 ? (
             <div className="empty-radar-box">
               <div className="empty-radar-icon">
                 <CheckCircle2 size={36} color="var(--success)" />
               </div>
-              <h4>All Inventory Is Healthy</h4>
-              <p>No food or drink items currently fall below threshold reserve levels.</p>
+              <h4>All Food Is Available</h4>
+              <p>No food items are currently marked unavailable.</p>
             </div>
           ) : (
             <div className="restock-radar-list">
-              {lowStockItems.map((item) => {
-                const stockPercent = Math.min(
-                  100,
-                  Math.round((item.stock / 20) * 100)
-                );
-                const isZero = item.stock === 0;
-
+              {unavailableFoods.map((item) => {
                 return (
                   <div key={item.id} className="restock-radar-card">
                     <div className="radar-card-left">
@@ -218,39 +208,23 @@ export default function OverviewTab({
                           </span>
                         </div>
 
-                        {/* Visual Remaining Bar */}
+                        {/* Availability indicator */}
                         <div className="radar-stock-meter-wrap">
                           <div className="radar-stock-meter-track">
                             <div
-                              className={`radar-stock-meter-bar ${
-                                isZero ? 'danger' : 'warn'
-                              }`}
-                              style={{ width: `${Math.max(8, stockPercent)}%` }}
+                              className="radar-stock-meter-bar danger"
+                              style={{ width: '100%' }}
                             />
                           </div>
                           <span className="radar-stock-text">
-                            {isZero ? (
-                              <strong style={{ color: 'var(--alert)' }}>
-                                0 Units (Out of Stock)
-                              </strong>
-                            ) : (
-                              <span>{item.stock} / 20 units remaining</span>
-                            )}
+                            <strong style={{ color: 'var(--alert)' }}>Unavailable</strong>
                           </span>
                         </div>
                       </div>
                     </div>
 
                     <div className="radar-card-right">
-                      <button
-                        type="button"
-                        className="btn-radar-resupply"
-                        onClick={() => onOpenResupply(item)}
-                        title={`Add stock to ${item.name}`}
-                      >
-                        <PackagePlus size={14} />
-                        <span>+ Resupply</span>
-                      </button>
+                      <span className="prodoco-stat-item">Status ID: {item.statusId}</span>
                     </div>
                   </div>
                 );

@@ -8,7 +8,7 @@ export default function AdminHeader({ activeTab }) {
       case 'tables':
         return 'Billiard Tables Management';
       case 'food':
-        return 'Food & Stock Inventory';
+        return 'Food Availability Management';
       case 'accounts':
         return 'Account & Staff Management';
       default:

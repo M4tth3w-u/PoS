@@ -9,15 +9,14 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 
-export default function FoodFormModal({ initialData, onClose, onSave }) {
+export default function FoodFormModal({ initialData, typeOptions, statusOptions, onClose, onSave }) {
   const isEditing = Boolean(initialData?.id);
   const fileInputRef = useRef(null);
 
   const [name, setName] = useState(initialData?.name || '');
-  const [category, setCategory] = useState(initialData?.category || 'Food');
+  const [typeId, setTypeId] = useState(initialData?.typeId ?? typeOptions[0]?.value ?? '');
+  const [statusId, setStatusId] = useState(initialData?.statusId ?? statusOptions[0]?.value ?? '');
   const [price, setPrice] = useState(initialData?.price || '');
-  const [stock, setStock] = useState(initialData?.stock ?? 10);
-  const [description, setDescription] = useState(initialData?.description || '');
 
   // Image states: 'upload' (from device library) vs 'preset' (project files)
   const isCustomUpload = initialData?.image?.startsWith('data:');
@@ -82,12 +81,13 @@ export default function FoodFormModal({ initialData, onClose, onSave }) {
     onSave({
       id: initialData?.id || Date.now().toString(),
       name: name.trim(),
-      category,
+      typeId,
+      statusId,
+      category:
+        typeOptions.find((option) => String(option.value) === String(typeId))?.label ||
+        initialData?.category ||
+        '',
       price: Number(price) || 0,
-      stock: Number(stock) || 0,
-      description:
-        description.trim() ||
-        'Delicious freshly prepared dish with premium ingredients.',
       image: image || '/images/hero-food.jpg',
       imageFile: rawFile, // Hand-off for backend multipart upload
       rating: initialData?.rating || 4.8,
@@ -275,46 +275,38 @@ export default function FoodFormModal({ initialData, onClose, onSave }) {
             />
           </div>
 
-          {/* Description */}
-          <div className="modal-form-group">
-            <label className="modal-label">Ingredients / Description</label>
-            <input
-              type="text"
-              className="modal-input"
-              placeholder="e.g. Artisan grilled beef patty, melted cheddar, house sauce..."
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-          </div>
-
-          {/* Category & Stock */}
+          {/* Food Type */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
             <div className="modal-form-group">
-              <label className="modal-label">Category</label>
+              <label className="modal-label">Food Type</label>
               <select
                 className="modal-input"
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
+                value={typeId}
+                onChange={(e) => setTypeId(e.target.value)}
               >
-                <option value="Food">Food / Mains</option>
-                <option value="Snack">Snacks & Sides</option>
-                <option value="Beverage">Beverages</option>
-                <option value="Dessert">Desserts</option>
+                {typeOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
               </select>
             </div>
+          </div>
 
-            <div className="modal-form-group">
-              <label className="modal-label">Initial Stock</label>
-              <input
-                type="number"
-                min="0"
-                className="modal-input"
-                placeholder="Stock Units"
-                value={stock}
-                onChange={(e) => setStock(e.target.value)}
-                required
-              />
-            </div>
+          {/* Availability Status */}
+          <div className="modal-form-group">
+            <label className="modal-label">Availability</label>
+            <select
+              className="modal-input"
+              value={statusId}
+              onChange={(e) => setStatusId(e.target.value)}
+            >
+              {statusOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* Selling Price */}

@@ -2,25 +2,26 @@ import React, { useState } from 'react';
 import {
   Search,
   Plus,
-  PackagePlus,
   Edit3,
   Trash2,
   Heart,
   Star,
-  Boxes,
-  AlertTriangle,
+  CheckCircle2,
+  XCircle,
 } from 'lucide-react';
 
 export default function FoodManagementTab({
   foods,
-  onOpenResupply,
+  foodTypeOptions,
+  errorMessage,
   onOpenAddModal,
   onOpenEditModal,
   onDeleteFood,
+  onToggleAvailability,
 }) {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('All');
-  const [stockFilter, setStockFilter] = useState('All');
+  const [selectedType, setSelectedType] = useState('All');
+  const [availabilityFilter, setAvailabilityFilter] = useState('All');
   const [favorites, setFavorites] = useState({});
 
   const toggleFavorite = (id) => {
@@ -30,18 +31,16 @@ export default function FoodManagementTab({
   const filteredFoods = foods.filter((item) => {
     const matchesSearch =
       item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (item.description && item.description.toLowerCase().includes(searchQuery.toLowerCase()));
+      item.category.toLowerCase().includes(searchQuery.toLowerCase());
 
-    const matchesCategory =
-      selectedCategory === 'All' || item.category === selectedCategory;
+    const matchesType = selectedType === 'All' || item.category === selectedType;
 
-    let matchesStock = true;
-    if (stockFilter === 'low') matchesStock = item.stock <= 5;
-    if (stockFilter === 'instock') matchesStock = item.stock > 5;
-    if (stockFilter === 'outofstock') matchesStock = item.stock === 0;
+    const matchesAvailability =
+      availabilityFilter === 'All' ||
+      (availabilityFilter === 'available' && item.isAvailable) ||
+      (availabilityFilter === 'unavailable' && !item.isAvailable);
 
-    return matchesSearch && matchesCategory && matchesStock;
+    return matchesSearch && matchesType && matchesAvailability;
   });
 
   const formatPrice = (val) => {
@@ -54,6 +53,8 @@ export default function FoodManagementTab({
 
   return (
     <div className="food-management-tab">
+      {errorMessage && <p role="alert">{errorMessage}</p>}
+
       {/* Top Controls Toolbar inspired by ProdoCo */}
       <div className="prodoco-toolbar">
         <div className="prodoco-search-wrap">
@@ -70,27 +71,25 @@ export default function FoodManagementTab({
           <div className="prodoco-select-wrap">
             <select
               className="prodoco-select"
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
+              value={selectedType}
+              onChange={(e) => setSelectedType(e.target.value)}
             >
-              <option value="All">All Categories</option>
-              <option value="Food">Food / Mains</option>
-              <option value="Snack">Snacks & Sides</option>
-              <option value="Beverage">Beverages</option>
-              <option value="Dessert">Desserts</option>
+              <option value="All">All Food Types</option>
+              {foodTypeOptions.map((type) => (
+                <option key={type.value} value={type.label}>{type.label}</option>
+              ))}
             </select>
           </div>
 
           <div className="prodoco-select-wrap">
             <select
               className="prodoco-select"
-              value={stockFilter}
-              onChange={(e) => setStockFilter(e.target.value)}
+              value={availabilityFilter}
+              onChange={(e) => setAvailabilityFilter(e.target.value)}
             >
-              <option value="All">All Stocks</option>
-              <option value="low">Low Stock (≤ 5)</option>
-              <option value="instock">In Stock (&gt; 5)</option>
-              <option value="outofstock">Out of Stock (0)</option>
+              <option value="All">All Availability</option>
+              <option value="available">Available</option>
+              <option value="unavailable">Unavailable</option>
             </select>
           </div>
         </div>
@@ -114,8 +113,8 @@ export default function FoodManagementTab({
             className="btn-resupply-pill"
             onClick={() => {
               setSearchQuery('');
-              setSelectedCategory('All');
-              setStockFilter('All');
+              setSelectedType('All');
+              setAvailabilityFilter('All');
             }}
           >
             Reset Filters
@@ -177,12 +176,10 @@ export default function FoodManagementTab({
                     <h3 className="prodoco-card-title">{item.name}</h3>
                     <span className="prodoco-category-badge">{item.category}</span>
                   </div>
-                  <p className="prodoco-card-desc">
-                    {item.description || 'Delicious freshly prepared culinary item with premium local ingredients.'}
-                  </p>
+                  <p className="prodoco-card-desc">{item.status || 'Status makanan belum tersedia'}</p>
                 </div>
 
-                {/* Metadata Row: Rating, Stock, Sold */}
+                {/* Metadata Row: Availability */}
                 <div className="prodoco-stats-row">
                   <span className="prodoco-stat-item">
                     <Star size={13} fill="#FBBF24" color="#FBBF24" />
@@ -190,20 +187,14 @@ export default function FoodManagementTab({
                   </span>
 
                   <span
-                    className={`prodoco-stat-item ${
-                      item.stock <= 5 ? 'stock-low' : 'stock-normal'
-                    }`}
+                    className={`prodoco-stat-item ${item.isAvailable ? 'stock-normal' : 'stock-low'}`}
                   >
-                    {item.stock <= 5 ? (
-                      <AlertTriangle size={13} color="var(--alert)" />
+                    {item.isAvailable ? (
+                      <CheckCircle2 size={13} color="var(--success)" />
                     ) : (
-                      <Boxes size={13} color="var(--primary)" />
+                      <XCircle size={13} color="var(--alert)" />
                     )}
-                    <span>{item.stock} in Stock</span>
-                  </span>
-
-                  <span className="prodoco-stat-item sold-badge">
-                    {item.soldCount || 100} Sold
+                    <span>{item.isAvailable ? 'Available' : 'Unavailable'}</span>
                   </span>
                 </div>
 
@@ -211,12 +202,12 @@ export default function FoodManagementTab({
                 <div className="prodoco-actions-row">
                   <button
                     type="button"
-                    className="btn-prodoco-resupply"
-                    onClick={() => onOpenResupply(item)}
-                    title="Quick Resupply Stock"
+                    className={`btn-prodoco-action ${item.isAvailable ? 'delete' : ''}`}
+                    onClick={() => onToggleAvailability(item.id)}
+                    title={item.isAvailable ? 'Set menu unavailable' : 'Set menu available'}
+                    aria-label={item.isAvailable ? 'Set menu unavailable' : 'Set menu available'}
                   >
-                    <PackagePlus size={15} />
-                    <span>+ Resupply</span>
+                    {item.isAvailable ? <XCircle size={15} /> : <CheckCircle2 size={15} />}
                   </button>
 
                   <button

@@ -13,7 +13,7 @@ export default function AdminSidebar({ activeTab, setActiveTab, user, onLogout }
   const navItems = [
     { id: 'overview', label: 'Overview', icon: LayoutDashboard },
     { id: 'tables', label: 'Billiard Tables', icon: CircleDot },
-    { id: 'food', label: 'Food & Stock', icon: UtensilsCrossed },
+    { id: 'food', label: 'Food Availability', icon: UtensilsCrossed },
     { id: 'accounts', label: 'Accounts', icon: Users },
   ];
 

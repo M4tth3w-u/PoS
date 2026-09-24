@@ -7,7 +7,6 @@ import OverviewTab from './admin/OverviewTab';
 import TableManagementTab from './admin/TableManagementTab';
 import FoodManagementTab from './admin/FoodManagementTab';
 import AccountManagementTab from './admin/AccountManagementTab';
-import ResupplyModal from './admin/ResupplyModal';
 import FoodFormModal from './admin/FoodFormModal';
 import AccountFormModal from './admin/AccountFormModal';
 import TableFormModal from './admin/TableFormModal';
@@ -29,15 +28,9 @@ const TABLE_STATUSES = [
 export default function AdminView({ user, onLogout }) {
   const [activeTab, setActiveTab] = useState('overview');
 
-  // Real dataset states (initialized empty for backend team integration)
-  const [foods, setFoods] = useState(() => {
-    try {
-      const saved = localStorage.getItem('pos_foods');
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
+  const [foods, setFoods] = useState([]);
+  const [foodsError, setFoodsError] = useState('');
+  const [foodTypeOptions, setFoodTypeOptions] = useState([]);
 
   const [tables, setTables] = useState([]);
   const [tablesLoading, setTablesLoading] = useState(false);
@@ -45,14 +38,7 @@ export default function AdminView({ user, onLogout }) {
   const [tableCategories, setTableCategories] = useState(TABLE_CATEGORIES);
   const [tableStatuses, setTableStatuses] = useState(TABLE_STATUSES);
 
-  const [accounts, setAccounts] = useState(() => {
-    try {
-      const saved = localStorage.getItem('pos_accounts');
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
+  const [accounts, setAccounts] = useState([]);
   const [accountsLoading, setAccountsLoading] = useState(false);
   const [accountsError, setAccountsError] = useState('');
 
@@ -99,6 +85,8 @@ export default function AdminView({ user, onLogout }) {
           }))
         );
       } catch (error) {
+        setAccounts([]);
+        localStorage.removeItem('pos_accounts');
         setAccountsError(error.message || 'Gagal mengambil data akun.');
       } finally {
         setAccountsLoading(false);
@@ -110,14 +98,94 @@ export default function AdminView({ user, onLogout }) {
     loadAccounts();
   }, [activeTab]);
 
-  // Sync state with local storage for frontend operational persistence
-  useEffect(() => {
+  const loadFoods = async () => {
+    setFoodsError('');
+
     try {
-      localStorage.setItem('pos_foods', JSON.stringify(foods));
-    } catch (err) {
-      console.error('Failed to persist foods', err);
+      const response = await fetch(apiUrl('/admin/food'), {
+        method: 'GET',
+        credentials: 'include',
+        headers: { Accept: 'application/json' },
+      });
+      const responseText = await response.text();
+      const responseData = responseText ? JSON.parse(responseText) : null;
+
+      if (!response.ok || responseData?.success === false) {
+        throw new Error(responseData?.message || 'Gagal mengambil data makanan.');
+      }
+
+      const foodList = Array.isArray(responseData)
+        ? responseData
+        : responseData?.data?.foods || responseData?.data || responseData?.foods || [];
+
+      if (!Array.isArray(foodList)) {
+        throw new Error('Format data makanan dari server tidak valid.');
+      }
+
+      setFoods(
+        foodList.map((food) => ({
+          ...food,
+          id: food.id ?? food.id_food,
+          typeId: food.id_type_food,
+          statusId: food.id_status_food,
+          name: food.name ?? food.name_food ?? food.nama_food ?? '',
+          category:
+            food.name_type_food ??
+            food.type_food ??
+            food.category ??
+            food.kategori ??
+            '',
+          price: Number(food.price_food ?? food.price ?? food.harga_food ?? 0),
+          image: food.img_food ?? food.image ?? food.image_food ?? '',
+          status: food.name_status_food ?? food.status_food ?? '',
+          isAvailable: Number(food.id_status_food) === 1,
+        }))
+      );
+    } catch (error) {
+      setFoods([]);
+      setFoodsError(error.message || 'Gagal mengambil data makanan.');
     }
-  }, [foods]);
+  };
+
+  const loadFoodTypes = async () => {
+    try {
+      const response = await fetch(apiUrl('/admin/type-food'), {
+        method: 'GET',
+        credentials: 'include',
+        headers: { Accept: 'application/json' },
+      });
+      const responseText = await response.text();
+      const responseData = responseText ? JSON.parse(responseText) : null;
+
+      if (!response.ok || responseData?.success === false) {
+        throw new Error(responseData?.message || 'Gagal mengambil tipe makanan.');
+      }
+
+      const typeList = Array.isArray(responseData)
+        ? responseData
+        : responseData?.data?.types || responseData?.data || responseData?.types || [];
+
+      if (!Array.isArray(typeList)) {
+        throw new Error('Format tipe makanan dari server tidak valid.');
+      }
+
+      setFoodTypeOptions(
+        typeList.map((type) => ({
+          value: type.id_type_food ?? type.id,
+          label: type.name_type_food ?? type.name ?? type.nama_type_food ?? '',
+        })).filter((type) => type.value != null && type.label)
+      );
+    } catch (error) {
+      setFoodTypeOptions([]);
+      setFoodsError(error.message || 'Gagal mengambil tipe makanan.');
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab !== 'food') return;
+    loadFoods();
+    loadFoodTypes();
+  }, [activeTab]);
 
   useEffect(() => {
     try {
@@ -127,16 +195,7 @@ export default function AdminView({ user, onLogout }) {
     }
   }, [tables]);
 
-  useEffect(() => {
-    try {
-      localStorage.setItem('pos_accounts', JSON.stringify(accounts));
-    } catch (err) {
-      console.error('Failed to persist accounts', err);
-    }
-  }, [accounts]);
-
   // Modal States
-  const [resupplyItem, setResupplyItem] = useState(null);
   const [foodModal, setFoodModal] = useState({ isOpen: false, item: null });
   const [accountModal, setAccountModal] = useState({ isOpen: false, account: null });
   const [tableModal, setTableModal] = useState({ isOpen: false, table: null });
@@ -315,33 +374,104 @@ export default function AdminView({ user, onLogout }) {
     });
   };
 
-  // Stock Resupply Handler
-  const handleConfirmResupply = (foodId, addQuantity) => {
-    setFoods((prev) =>
-      prev.map((f) => (f.id === foodId ? { ...f, stock: f.stock + addQuantity } : f))
-    );
-    setResupplyItem(null);
+  // Food CRUD Handlers
+  const handleSaveFood = async (itemData) => {
+    const isUpdating = Boolean(itemData.id && foods.some((food) => food.id === itemData.id));
+    const payload = {
+      name_food: itemData.name,
+      price_food: Number(itemData.price) || 0,
+      id_status_food: itemData.statusId,
+      id_type_food: itemData.typeId,
+      img_food: itemData.image || '',
+    };
+
+    if (isUpdating) payload.id_food = itemData.id;
+
+    try {
+      const response = await fetch(apiUrl('/admin/food/save'), {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+      const responseData = await response.json();
+
+      if (!response.ok || responseData?.success === false) {
+        throw new Error(responseData?.message || 'Gagal menyimpan menu.');
+      }
+
+      setFoodModal({ isOpen: false, item: null });
+      await loadFoods();
+      await showSuccess(isUpdating ? 'Menu berhasil diperbarui.' : 'Menu berhasil ditambahkan.');
+    } catch (error) {
+      await showError(error.message || 'Gagal menyimpan menu.');
+    }
   };
 
-  // Food CRUD Handlers
-  const handleSaveFood = (itemData) => {
-    const isUpdating = foods.some((food) => food.id === itemData.id);
-    setFoods((prev) => {
-      if (isUpdating) {
-        return prev.map((f) => (f.id === itemData.id ? itemData : f));
+  const handleToggleFoodAvailability = async (foodId) => {
+    const food = foods.find((item) => item.id === foodId);
+    if (!food) return;
+
+    const nextStatusId = food.isAvailable ? 2 : 1;
+
+    try {
+      const response = await fetch(apiUrl('/admin/food/save'), {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify({
+          id_food: food.id,
+          name_food: food.name,
+          price_food: food.price,
+          id_status_food: nextStatusId,
+          id_type_food: food.typeId,
+          img_food: food.image || '',
+        }),
+      });
+      const responseData = await response.json();
+
+      if (!response.ok || responseData?.success === false) {
+        throw new Error(responseData?.message || 'Gagal mengubah ketersediaan menu.');
       }
-      return [itemData, ...prev];
-    });
-    setFoodModal({ isOpen: false, item: null });
-    showSuccess(isUpdating ? 'Menu berhasil diperbarui.' : 'Menu berhasil ditambahkan.');
+
+      await loadFoods();
+      await showSuccess('Status ketersediaan menu diperbarui.');
+    } catch (error) {
+      await showError(error.message || 'Gagal mengubah ketersediaan menu.');
+    }
   };
 
   const handleDeleteFood = async (foodId) => {
     const confirmation = await confirmDelete('Menu makanan');
     if (!confirmation.isConfirmed) return;
 
-    setFoods((prev) => prev.filter((food) => food.id !== foodId));
-    await showSuccess('Menu berhasil dihapus.');
+    try {
+      const response = await fetch(apiUrl('/admin/food/delete'), {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify({ id_food: foodId, id: foodId }),
+      });
+      const responseData = await response.json();
+
+      if (!response.ok || responseData?.success === false) {
+        throw new Error(responseData?.message || 'Gagal menghapus menu.');
+      }
+
+      await loadFoods();
+      await showSuccess('Menu berhasil dihapus.');
+    } catch (error) {
+      await showError(error.message || 'Gagal menghapus menu.');
+    }
   };
 
   // Account CRUD Handlers
@@ -425,8 +555,6 @@ export default function AdminView({ user, onLogout }) {
     }
   };
 
-  const lowStockCount = foods.filter((f) => f.stock <= 5).length;
-
   return (
     <div className="admin-layout">
       {/* Background Ambient Lighting */}
@@ -453,7 +581,6 @@ export default function AdminView({ user, onLogout }) {
               foods={foods}
               accounts={accounts}
               tables={tables}
-              onOpenResupply={setResupplyItem}
               onNavigateTab={setActiveTab}
             />
           )}
@@ -475,10 +602,12 @@ export default function AdminView({ user, onLogout }) {
           {activeTab === 'food' && (
             <FoodManagementTab
               foods={foods}
-              onOpenResupply={setResupplyItem}
+              foodTypeOptions={foodTypeOptions}
+              errorMessage={foodsError}
               onOpenAddModal={() => setFoodModal({ isOpen: true, item: null })}
               onOpenEditModal={(item) => setFoodModal({ isOpen: true, item })}
               onDeleteFood={handleDeleteFood}
+              onToggleAvailability={handleToggleFoodAvailability}
             />
           )}
 
@@ -503,17 +632,22 @@ export default function AdminView({ user, onLogout }) {
       />
 
       {/* Modal Dialogs */}
-      {resupplyItem && (
-        <ResupplyModal
-          item={resupplyItem}
-          onClose={() => setResupplyItem(null)}
-          onConfirm={handleConfirmResupply}
-        />
-      )}
-
       {foodModal.isOpen && (
         <FoodFormModal
           initialData={foodModal.item}
+          typeOptions={foodTypeOptions}
+          statusOptions={[
+            ...new Map(
+              foods
+                .filter((food) => food.statusId && food.status)
+                .map((food) => [String(food.statusId), { value: food.statusId, label: food.status }])
+            ).values(),
+            { value: 1, label: 'Available' },
+            { value: 2, label: 'Unavailable' },
+          ].filter(
+            (option, index, options) =>
+              options.findIndex((item) => String(item.value) === String(option.value)) === index
+          )}
           onClose={() => setFoodModal({ isOpen: false, item: null })}
           onSave={handleSaveFood}
         />
