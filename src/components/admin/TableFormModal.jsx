@@ -1,18 +1,28 @@
 import React, { useState } from 'react';
 import { X, CircleDot } from 'lucide-react';
 
-export default function TableFormModal({ initialData, onClose, onSave }) {
+export default function TableFormModal({
+  initialData,
+  categories,
+  statuses,
+  onClose,
+  onSave,
+}) {
   const isEditing = Boolean(initialData?.id);
 
   const [tableNumber, setTableNumber] = useState(initialData?.tableNumber || '');
-  const [type, setType] = useState(initialData?.type || 'Standard (9ft)');
-  const [hourlyRate, setHourlyRate] = useState(initialData?.hourlyRate ?? 35000);
-  const [status, setStatus] = useState(
-    initialData?.status === 'Maintenance' ? 'Maintenance' : 'Ready'
+  const categoryOptions = categories.length > 0
+    ? categories
+    : [{ value: '', label: 'Category belum tersedia' }];
+  const statusOptions = statuses.length > 0
+    ? statuses
+    : [{ value: '', label: 'Status belum tersedia' }];
+  const [categoryId, setCategoryId] = useState(
+    initialData?.categoryId ?? categoryOptions[0].value
   );
-  const [location, setLocation] = useState(initialData?.location || 'Main Floor - Area A');
-  const [specifications, setSpecifications] = useState(
-    initialData?.specifications || 'Tournament Slate & Standard Cloth'
+  const [hourlyRate, setHourlyRate] = useState(initialData?.hourlyRate ?? 35000);
+  const [statusId, setStatusId] = useState(
+    initialData?.statusId ?? statusOptions[0].value
   );
 
   const handleSubmit = (e) => {
@@ -20,13 +30,11 @@ export default function TableFormModal({ initialData, onClose, onSave }) {
     if (!tableNumber.trim()) return;
 
     onSave({
-      id: initialData?.id || `tbl-${Date.now()}`,
+      ...(isEditing ? { id: initialData.id } : {}),
       tableNumber: tableNumber.trim(),
-      type,
+      categoryId,
       hourlyRate: Number(hourlyRate) || 0,
-      status,
-      location: location.trim() || 'Main Floor',
-      specifications: specifications.trim() || 'Standard Billiard Table',
+      statusId,
       updatedAt: new Date().toISOString(),
     });
   };
@@ -72,12 +80,14 @@ export default function TableFormModal({ initialData, onClose, onSave }) {
               <label className="modal-label">Tier / Category</label>
               <select
                 className="modal-input"
-                value={type}
-                onChange={(e) => setType(e.target.value)}
+                value={categoryId}
+                onChange={(e) => setCategoryId(e.target.value)}
               >
-                <option value="Standard (9ft)">Standard (9ft)</option>
-                <option value="VIP Room">VIP Room</option>
-                <option value="VVIP Suite">VVIP Suite</option>
+                {categoryOptions.map((category) => (
+                  <option key={category.value} value={category.value}>
+                    {category.label}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -96,42 +106,20 @@ export default function TableFormModal({ initialData, onClose, onSave }) {
             </div>
           </div>
 
-          {/* Status & Floor Location */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
-            <div className="modal-form-group">
-              <label className="modal-label">Operational Status</label>
-              <select
-                className="modal-input"
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
-              >
-                <option value="Ready">Ready / Available</option>
-                <option value="Maintenance">Under Maintenance</option>
-              </select>
-            </div>
-
-            <div className="modal-form-group">
-              <label className="modal-label">Floor Location</label>
-              <input
-                type="text"
-                className="modal-input"
-                placeholder="e.g. Main Hall - Area A"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-              />
-            </div>
-          </div>
-
-          {/* Equipment / Specs Notes */}
+          {/* Operational Status */}
           <div className="modal-form-group">
-            <label className="modal-label">Cloth / Equipment Specs</label>
-            <input
-              type="text"
+            <label className="modal-label">Operational Status</label>
+            <select
               className="modal-input"
-              placeholder="e.g. Simonis 860 Cloth, Aramith Tournament Balls"
-              value={specifications}
-              onChange={(e) => setSpecifications(e.target.value)}
-            />
+              value={statusId}
+              onChange={(e) => setStatusId(e.target.value)}
+            >
+              {statusOptions.map((statusOption) => (
+                <option key={statusOption.value} value={statusOption.value}>
+                  {statusOption.label}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className="modal-footer-btns">

@@ -7,6 +7,7 @@ import {
   LogOut,
   ShieldCheck,
 } from 'lucide-react';
+import BackendStatusIndicator from '../BackendStatusIndicator';
 
 export default function AdminSidebar({ activeTab, setActiveTab, user, onLogout }) {
   const navItems = [
@@ -49,6 +50,7 @@ export default function AdminSidebar({ activeTab, setActiveTab, user, onLogout }
             );
           })}
         </nav>
+        <BackendStatusIndicator />
       </div>
 
       {/* Admin Profile & Logout */}

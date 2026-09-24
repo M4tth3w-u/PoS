@@ -64,6 +64,14 @@ npm run dev
 
 Open [http://localhost:5173/](http://localhost:5173/) in your browser.
 
+The frontend backend URL is configured through `VITE_API_BASE_URL` in `.env`:
+
+```env
+VITE_API_BASE_URL=http://localhost:8080
+```
+
+Change this value when using another backend. The left navigation shows the connection status from `${VITE_API_BASE_URL}/status`.
+
 ### Building for Production
 Compile and bundle optimized static assets:
 

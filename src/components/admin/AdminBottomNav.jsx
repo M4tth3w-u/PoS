@@ -1,5 +1,6 @@
 import React from 'react';
 import { LayoutDashboard, CircleDot, UtensilsCrossed, Users, LogOut } from 'lucide-react';
+import BackendStatusIndicator from '../BackendStatusIndicator';
 
 export default function AdminBottomNav({ activeTab, setActiveTab, onLogout }) {
   const tabs = [
@@ -11,6 +12,7 @@ export default function AdminBottomNav({ activeTab, setActiveTab, onLogout }) {
 
   return (
     <nav className="admin-bottom-nav" aria-label="Mobile Navigation">
+      <BackendStatusIndicator compact />
       {tabs.map((tab) => {
         const Icon = tab.icon;
         const isActive = activeTab === tab.id;

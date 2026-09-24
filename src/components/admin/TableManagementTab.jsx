@@ -17,6 +17,10 @@ import {
 
 export default function TableManagementTab({
   tables,
+  isLoading,
+  errorMessage,
+  tableCategories,
+  tableStatuses,
   onOpenAddModal,
   onOpenEditModal,
   onDeleteTable,
@@ -34,12 +38,8 @@ export default function TableManagementTab({
         table.specifications.toLowerCase().includes(searchQuery.toLowerCase()));
 
     const matchesTier = tierFilter === 'All' || table.type === tierFilter;
-    const isMaintenance = table.status === 'Maintenance';
-    const isReady = table.status === 'Ready' || table.status === 'Available';
-
     let matchesStatus = true;
-    if (statusFilter === 'Ready') matchesStatus = isReady;
-    if (statusFilter === 'Maintenance') matchesStatus = isMaintenance;
+    if (statusFilter !== 'All') matchesStatus = table.status === statusFilter;
 
     return matchesSearch && matchesTier && matchesStatus;
   });
@@ -76,6 +76,9 @@ export default function TableManagementTab({
 
   return (
     <div className="table-management-tab">
+      {isLoading && <p>Loading tables...</p>}
+      {errorMessage && <p role="alert">{errorMessage}</p>}
+
       {/* 3 Executive Billiard KPI Cards (Refined & Engaging Layout) */}
       <div className="table-kpi-grid">
         {/* Total Tables */}
@@ -192,9 +195,11 @@ export default function TableManagementTab({
             onChange={(e) => setTierFilter(e.target.value)}
           >
             <option value="All">All Tiers</option>
-            <option value="Standard (9ft)">Standard (9ft)</option>
-            <option value="VIP Room">VIP Room</option>
-            <option value="VVIP Suite">VVIP Suite</option>
+            {tableCategories.map((category) => (
+              <option key={category.value} value={category.label}>
+                {category.label}
+              </option>
+            ))}
           </select>
 
           <select
@@ -203,8 +208,11 @@ export default function TableManagementTab({
             onChange={(e) => setStatusFilter(e.target.value)}
           >
             <option value="All">All Statuses</option>
-            <option value="Ready">Ready / Available</option>
-            <option value="Maintenance">Under Maintenance</option>
+            {tableStatuses.map((status) => (
+              <option key={status.value} value={status.label}>
+                {status.label}
+              </option>
+            ))}
           </select>
         </div>
 
@@ -266,7 +274,7 @@ export default function TableManagementTab({
                     <span
                       className={`status-dot ${isMaintenance ? 'amber' : 'green'}`}
                     />
-                    <span>{isMaintenance ? 'Under Maintenance' : 'Ready'}</span>
+                    <span>{table.status || 'Ready'}</span>
                   </span>
                 </div>
 
@@ -278,20 +286,6 @@ export default function TableManagementTab({
                       {formatCurrency(table.hourlyRate)}
                     </span>
                     <span className="rate-unit">/ hour</span>
-                  </div>
-                </div>
-
-                {/* Location & Equipment Specs */}
-                <div className="table-meta-list">
-                  <div className="table-meta-item">
-                    <MapPin size={14} className="meta-icon" />
-                    <span>{table.location || 'Main Floor'}</span>
-                  </div>
-                  <div className="table-meta-item">
-                    <Layers size={14} className="meta-icon" />
-                    <span>
-                      {table.specifications || 'Standard Tournament Cloth'}
-                    </span>
                   </div>
                 </div>
 

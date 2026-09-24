@@ -9,6 +9,7 @@ import {
   Loader2,
   Globe,
 } from 'lucide-react';
+import { apiUrl, API_BASE_URL } from '../config/api';
 
 export default function LoginForm({ lang, setLang, onLoginSuccess }) {
   const [username, setUsername] = useState('');
@@ -35,7 +36,7 @@ export default function LoginForm({ lang, setLang, onLoginSuccess }) {
       errEmpty: 'Please enter both your ID and password.',
       errInvalid: 'Invalid credentials. Please verify your ID and password.',
       errServer: 'Server error. Please try again later.',
-      errNetwork: 'Unable to connect to server (http://localhost:8080).',
+      errNetwork: `Unable to connect to server (${API_BASE_URL}).`,
       popupTitle: 'Login Failed',
       popupClose: 'Dismiss',
     },
@@ -51,7 +52,7 @@ export default function LoginForm({ lang, setLang, onLoginSuccess }) {
       errEmpty: 'Harap masukkan ID dan kata sandi.',
       errInvalid: 'Kredensial tidak valid. Harap periksa ID dan kata sandi Anda.',
       errServer: 'Terjadi kesalahan server. Silakan coba lagi.',
-      errNetwork: 'Gagal terhubung ke server (http://localhost:8080).',
+      errNetwork: `Gagal terhubung ke server (${API_BASE_URL}).`,
       popupTitle: 'Login Gagal',
       popupClose: 'Tutup',
     },
@@ -69,7 +70,7 @@ export default function LoginForm({ lang, setLang, onLoginSuccess }) {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('/auth/action_login', {
+      const response = await fetch(apiUrl('/auth/action_login'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
