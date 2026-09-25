@@ -16,6 +16,10 @@ export default defineConfig(({ mode }) => {
     ],
     server: {
       proxy: {
+        '/images/food_': {
+          target: backendUrl,
+          changeOrigin: true,
+        },
         '/status': {
           target: backendUrl,
           changeOrigin: true,

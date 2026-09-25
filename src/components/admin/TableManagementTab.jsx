@@ -12,7 +12,7 @@ import {
   TrendingUp,
   AlertTriangle,
   Gem,
-  Diamond,
+  Star,
 } from 'lucide-react';
 
 export default function TableManagementTab({
@@ -63,7 +63,7 @@ export default function TableManagementTab({
       return <Gem size={18} />;
     }
     if (tier.includes('VIP')) {
-      return <Diamond size={18} />;
+      return <Star size={18} />;
     }
     return <CircleDot size={18} />;
   };
@@ -208,11 +208,17 @@ export default function TableManagementTab({
             onChange={(e) => setStatusFilter(e.target.value)}
           >
             <option value="All">All Statuses</option>
-            {tableStatuses.map((status) => (
-              <option key={status.value} value={status.label}>
-                {status.label}
-              </option>
-            ))}
+            {tableStatuses
+              .filter(
+                (status) =>
+                  String(status.value) !== '2' &&
+                  String(status.label).toLowerCase() !== 'used'
+              )
+              .map((status) => (
+                <option key={status.value} value={status.label}>
+                  {status.label}
+                </option>
+              ))}
           </select>
         </div>
 

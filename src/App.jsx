@@ -9,10 +9,11 @@ const LOGIN_STORAGE_KEY = 'pos_login_response';
 function App() {
   const [loginResponse, setLoginResponse] = useState(() => {
     try {
-      const savedLogin = localStorage.getItem(LOGIN_STORAGE_KEY);
+      localStorage.removeItem(LOGIN_STORAGE_KEY);
+      const savedLogin = sessionStorage.getItem(LOGIN_STORAGE_KEY);
       return savedLogin ? JSON.parse(savedLogin) : null;
     } catch {
-      localStorage.removeItem(LOGIN_STORAGE_KEY);
+      sessionStorage.removeItem(LOGIN_STORAGE_KEY);
       return null;
     }
   });
@@ -53,13 +54,15 @@ function App() {
 
   useEffect(() => {
     if (loginResponse) {
-      localStorage.setItem(LOGIN_STORAGE_KEY, JSON.stringify(loginResponse));
+      sessionStorage.setItem(LOGIN_STORAGE_KEY, JSON.stringify(loginResponse));
     } else {
-      localStorage.removeItem(LOGIN_STORAGE_KEY);
+      sessionStorage.removeItem(LOGIN_STORAGE_KEY);
     }
   }, [loginResponse]);
 
   const handleLogout = () => {
+    sessionStorage.removeItem(LOGIN_STORAGE_KEY);
+    localStorage.removeItem(LOGIN_STORAGE_KEY);
     setLoginResponse(null);
   };
 

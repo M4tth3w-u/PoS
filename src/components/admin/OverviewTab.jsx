@@ -9,6 +9,7 @@ import {
   Clock,
   ChevronRight,
 } from 'lucide-react';
+import { resolveImageUrl } from '../../config/api';
 
 export default function OverviewTab({
   foods,
@@ -191,7 +192,7 @@ export default function OverviewTab({
                     <div className="radar-card-left">
                       <div className="radar-dish-thumb">
                         <img
-                          src={item.image || '/images/hero-food.jpg'}
+                          src={resolveImageUrl(item.image)}
                           alt={item.name}
                           onError={(e) => {
                             e.target.onerror = null;

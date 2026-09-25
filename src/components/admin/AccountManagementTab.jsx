@@ -128,7 +128,7 @@ export default function AccountManagementTab({
                       <div className="table-action-btns" style={{ justifyContent: 'flex-end' }}>
                         <button
                           type="button"
-                          className="btn-table-action"
+                          className="btn-table-action edit"
                           onClick={() => onOpenEditModal(account)}
                           title="Edit user details"
                         >
@@ -180,8 +180,9 @@ export default function AccountManagementTab({
               <div style={{ display: 'flex', gap: '6px' }}>
                 <button
                   type="button"
-                  className="btn-table-action"
+                  className="btn-table-action edit"
                   onClick={() => onOpenEditModal(account)}
+                  title="Edit user details"
                 >
                   <Edit3 size={16} />
                 </button>

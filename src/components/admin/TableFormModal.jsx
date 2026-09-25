@@ -14,15 +14,23 @@ export default function TableFormModal({
   const categoryOptions = categories.length > 0
     ? categories
     : [{ value: '', label: 'Category belum tersedia' }];
-  const statusOptions = statuses.length > 0
-    ? statuses
-    : [{ value: '', label: 'Status belum tersedia' }];
+  const statusOptions = (
+    statuses.length > 0
+      ? statuses
+      : [{ value: '', label: 'Status belum tersedia' }]
+  ).filter(
+    (status) =>
+      String(status.value) !== '2' &&
+      String(status.label).toLowerCase() !== 'used'
+  );
   const [categoryId, setCategoryId] = useState(
     initialData?.categoryId ?? categoryOptions[0].value
   );
   const [hourlyRate, setHourlyRate] = useState(initialData?.hourlyRate ?? 35000);
   const [statusId, setStatusId] = useState(
-    initialData?.statusId ?? statusOptions[0].value
+    initialData?.statusId && String(initialData.statusId) !== '2'
+      ? initialData.statusId
+      : statusOptions[0]?.value ?? 1
   );
 
   const handleSubmit = (e) => {

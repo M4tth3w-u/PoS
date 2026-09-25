@@ -5,10 +5,10 @@ import {
   Edit3,
   Trash2,
   Heart,
-  Star,
   CheckCircle2,
   XCircle,
 } from 'lucide-react';
+import { resolveImageUrl } from '../../config/api';
 
 export default function FoodManagementTab({
   foods,
@@ -142,7 +142,7 @@ export default function FoodManagementTab({
                 {/* Product Image Preview */}
                 <div className="prodoco-img-container">
                   <img
-                    src={item.image || '/images/hero-food.jpg'}
+                    src={resolveImageUrl(item.image)}
                     alt={item.name}
                     className="prodoco-product-img"
                     onError={(e) => {
@@ -181,11 +181,7 @@ export default function FoodManagementTab({
 
                 {/* Metadata Row: Availability */}
                 <div className="prodoco-stats-row">
-                  <span className="prodoco-stat-item">
-                    <Star size={13} fill="#FBBF24" color="#FBBF24" />
-                    <span>{item.rating || '4.8'}</span>
-                  </span>
-
+                  <span className="prodoco-stat-label">Availability</span>
                   <span
                     className={`prodoco-stat-item ${item.isAvailable ? 'stock-normal' : 'stock-low'}`}
                   >
@@ -202,7 +198,7 @@ export default function FoodManagementTab({
                 <div className="prodoco-actions-row">
                   <button
                     type="button"
-                    className={`btn-prodoco-action ${item.isAvailable ? 'delete' : ''}`}
+                    className={`btn-prodoco-action ${item.isAvailable ? 'delete' : 'success'}`}
                     onClick={() => onToggleAvailability(item.id)}
                     title={item.isAvailable ? 'Set menu unavailable' : 'Set menu available'}
                     aria-label={item.isAvailable ? 'Set menu unavailable' : 'Set menu available'}
@@ -212,9 +208,10 @@ export default function FoodManagementTab({
 
                   <button
                     type="button"
-                    className="btn-prodoco-action"
+                    className="btn-prodoco-action edit"
                     onClick={() => onOpenEditModal(item)}
                     title="Edit Item Details"
+                    aria-label="Edit Item Details"
                   >
                     <Edit3 size={15} />
                   </button>

@@ -94,8 +94,9 @@ export default function AdminView({ user, onLogout }) {
   };
 
   useEffect(() => {
-    if (activeTab !== 'accounts') return;
-    loadAccounts();
+    if (activeTab === 'overview' || activeTab === 'accounts') {
+      loadAccounts();
+    }
   }, [activeTab]);
 
   const loadFoods = async () => {
@@ -136,7 +137,12 @@ export default function AdminView({ user, onLogout }) {
             food.kategori ??
             '',
           price: Number(food.price_food ?? food.price ?? food.harga_food ?? 0),
-          image: food.img_food ?? food.image ?? food.image_food ?? '',
+          image:
+            food.img_food && food.img_food !== '-'
+              ? food.img_food
+              : food.image && food.image !== '-'
+                ? food.image
+                : '/images/hero-food.jpg',
           status: food.name_status_food ?? food.status_food ?? '',
           isAvailable: Number(food.id_status_food) === 1,
         }))
@@ -182,9 +188,10 @@ export default function AdminView({ user, onLogout }) {
   };
 
   useEffect(() => {
-    if (activeTab !== 'food') return;
-    loadFoods();
-    loadFoodTypes();
+    if (activeTab === 'overview' || activeTab === 'food') {
+      loadFoods();
+      loadFoodTypes();
+    }
   }, [activeTab]);
 
   useEffect(() => {
@@ -285,7 +292,9 @@ export default function AdminView({ user, onLogout }) {
   };
 
   useEffect(() => {
-    if (activeTab === 'tables') loadTables();
+    if (activeTab === 'overview' || activeTab === 'tables') {
+      loadTables();
+    }
   }, [activeTab]);
 
   // Billiard Table CRUD Handlers
@@ -368,9 +377,11 @@ export default function AdminView({ user, onLogout }) {
     const table = tables.find((item) => item.id === tableId);
     if (!table) return;
 
+    const nextStatusId = Number(table.statusId) === 3 ? 1 : 3;
     handleSaveTable({
       ...table,
-      status: table.status === 'Maintenance' ? 'Ready' : 'Maintenance',
+      statusId: nextStatusId,
+      status: nextStatusId === 1 ? 'Ready' : 'Maintenance',
     });
   };
 

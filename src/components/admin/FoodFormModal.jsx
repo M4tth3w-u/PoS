@@ -3,11 +3,11 @@ import {
   X,
   UtensilsCrossed,
   UploadCloud,
-  Image as ImageIcon,
   Trash2,
   AlertCircle,
   CheckCircle2,
 } from 'lucide-react';
+import { resolveImageUrl } from '../../config/api';
 
 export default function FoodFormModal({ initialData, typeOptions, statusOptions, onClose, onSave }) {
   const isEditing = Boolean(initialData?.id);
@@ -18,29 +18,15 @@ export default function FoodFormModal({ initialData, typeOptions, statusOptions,
   const [statusId, setStatusId] = useState(initialData?.statusId ?? statusOptions[0]?.value ?? '');
   const [price, setPrice] = useState(initialData?.price || '');
 
-  // Image states: 'upload' (from device library) vs 'preset' (project files)
-  const isCustomUpload = initialData?.image?.startsWith('data:');
-  const [imageMode, setImageMode] = useState(isCustomUpload ? 'upload' : 'upload');
-  const [image, setImage] = useState(initialData?.image || '');
+  const [image, setImage] = useState(
+    initialData?.image && initialData.image !== '-' ? initialData.image : ''
+  );
   const [rawFile, setRawFile] = useState(null);
   const [fileName, setFileName] = useState('');
   const [isDragging, setIsDragging] = useState(false);
   const [uploadError, setUploadError] = useState('');
 
-  const availableImages = [
-    { label: 'Cheeseburger', path: '/images/pexels-angel-ayala-321556-28976230.jpg' },
-    { label: 'Crispy Wings', path: '/images/pexels-ron-lach-8880727.jpg' },
-    { label: 'Loaded Nachos', path: '/images/pexels-ceylonframes-38572179.jpg' },
-    { label: 'Supreme Pizza', path: '/images/pexels-530123908-29150162.jpg' },
-    { label: 'Artisan Hot Dog', path: '/images/pexels-dhiraj-jain-207743066-12737797.jpg' },
-    { label: 'Iced Coffee', path: '/images/pexels-nadin-sh-78971847-19674142.jpg' },
-    { label: 'Fresh Lemon Drink', path: '/images/pexels-soc-nang-d-ng-2150345854-38575652.jpg' },
-    { label: 'Berry Sundae', path: '/images/pexels-valeriya-20350170.jpg' },
-    { label: 'Pub Feast Spread', path: '/images/spread.jpg' },
-    { label: 'Hero Gourmet Dish', path: '/images/hero-food.jpg' },
-  ];
-
-  const handleFile = (file) => {
+  const handleFile = async (file) => {
     setUploadError('');
     if (!file) return;
 
@@ -51,19 +37,52 @@ export default function FoodFormModal({ initialData, typeOptions, statusOptions,
       return;
     }
 
-    // Validate size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      setUploadError('Image size exceeds 5MB limit.');
-      return;
-    }
+    try {
+      const dataUrl = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onerror = () => reject(new Error('Failed to read image'));
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onerror = () => reject(new Error('Failed to decode image'));
+          img.onload = () => {
+            const maxDimension = 1200;
+            let width = img.width;
+            let height = img.height;
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setImage(e.target.result);
+            if (width > maxDimension || height > maxDimension) {
+              if (width > height) {
+                height = Math.round((height * maxDimension) / width);
+                width = maxDimension;
+              } else {
+                width = Math.round((width * maxDimension) / height);
+                height = maxDimension;
+              }
+              const canvas = document.createElement('canvas');
+              canvas.width = width;
+              canvas.height = height;
+              const ctx = canvas.getContext('2d');
+              ctx.drawImage(img, 0, 0, width, height);
+              const outputMime = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+              resolve(canvas.toDataURL(outputMime, 0.88));
+            } else {
+              resolve(e.target.result);
+            }
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+
+      setImage(dataUrl);
       setRawFile(file);
       setFileName(file.name);
-    };
-    reader.readAsDataURL(file);
+    } catch (err) {
+      setUploadError('Unable to process this image file. Please try another image.');
+    } finally {
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
   };
 
   const handleDrop = (e) => {
@@ -112,153 +131,99 @@ export default function FoodFormModal({ initialData, typeOptions, statusOptions,
         </div>
 
         <form onSubmit={handleSubmit}>
-          {/* Dish Image Selector with Device Library Upload */}
+          {/* Dish Photo (Upload from Laptop/Device) */}
           <div className="modal-form-group">
-            <div className="image-mode-header">
-              <label className="modal-label" style={{ marginBottom: 0 }}>
-                Dish Photo
-              </label>
+            <label className="modal-label">Dish Photo</label>
 
-              {/* Mode Switcher Tabs */}
-              <div className="image-mode-tabs">
-                <button
-                  type="button"
-                  className={`btn-image-tab ${imageMode === 'upload' ? 'active' : ''}`}
-                  onClick={() => setImageMode('upload')}
-                >
-                  <UploadCloud size={13} />
-                  <span>Device Library</span>
-                </button>
-                <button
-                  type="button"
-                  className={`btn-image-tab ${imageMode === 'preset' ? 'active' : ''}`}
-                  onClick={() => {
-                    setImageMode('preset');
-                    if (!image || image.startsWith('data:')) {
-                      setImage(availableImages[0].path);
-                    }
-                  }}
-                >
-                  <ImageIcon size={13} />
-                  <span>Project Presets</span>
-                </button>
-              </div>
-            </div>
+            <div className="upload-container">
+              <input
+                type="file"
+                ref={fileInputRef}
+                accept="image/png, image/jpeg, image/webp"
+                style={{ display: 'none' }}
+                onChange={(e) => {
+                  if (e.target.files && e.target.files[0]) {
+                    handleFile(e.target.files[0]);
+                  }
+                }}
+              />
 
-            {imageMode === 'upload' ? (
-              <div className="upload-container">
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  accept="image/png, image/jpeg, image/webp"
-                  style={{ display: 'none' }}
-                  onChange={(e) => {
-                    if (e.target.files && e.target.files[0]) {
-                      handleFile(e.target.files[0]);
-                    }
-                  }}
-                />
-
-                {image ? (
-                  <div className="upload-preview-card">
-                    <img
-                      src={image}
-                      alt="Preview"
-                      className="upload-preview-thumb"
-                      onError={(e) => {
-                        e.target.src = '/images/hero-food.jpg';
-                      }}
-                    />
-                    <div className="upload-preview-info">
-                      <span className="upload-preview-name">
-                        {fileName || (image.startsWith('data:') ? 'Custom Uploaded Photo' : image.split('/').pop())}
-                      </span>
-                      <span className="upload-preview-status">
-                        <CheckCircle2 size={12} color="var(--success)" />
-                        Ready to use
-                      </span>
-                    </div>
-                    <div className="upload-preview-actions">
-                      <button
-                        type="button"
-                        className="btn-preview-action"
-                        onClick={() => fileInputRef.current?.click()}
-                      >
-                        Change
-                      </button>
-                      <button
-                        type="button"
-                        className="btn-preview-action delete"
-                        onClick={() => {
-                          setImage('');
-                          setRawFile(null);
-                          setFileName('');
-                        }}
-                        title="Remove photo"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div
-                    className={`image-upload-dropzone ${isDragging ? 'is-dragging' : ''}`}
-                    onClick={() => fileInputRef.current?.click()}
-                    onDragOver={(e) => {
-                      e.preventDefault();
-                      setIsDragging(true);
-                    }}
-                    onDragLeave={() => setIsDragging(false)}
-                    onDrop={handleDrop}
-                    role="button"
-                    tabIndex={0}
-                  >
-                    <div className="dropzone-icon">
-                      <UploadCloud size={24} />
-                    </div>
-                    <div className="dropzone-text">
-                      <strong className="dropzone-title">
-                        Click to browse device library
-                      </strong>
-                      <span className="dropzone-hint">
-                        or drag and drop photo here &bull; PNG, JPG, WEBP (Max 5MB)
-                      </span>
-                    </div>
-                  </div>
-                )}
-
-                {uploadError && (
-                  <div className="upload-error-pill">
-                    <AlertCircle size={13} />
-                    <span>{uploadError}</span>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div style={{ display: 'flex', gap: '14px', alignItems: 'center' }}>
-                <div className="preset-thumb-box">
+              {image && image !== '-' ? (
+                <div className="upload-preview-card">
                   <img
-                    src={image || '/images/hero-food.jpg'}
+                    src={resolveImageUrl(image)}
                     alt="Preview"
+                    className="upload-preview-thumb"
                     onError={(e) => {
+                      e.target.onerror = null;
                       e.target.src = '/images/hero-food.jpg';
                     }}
                   />
+                  <div className="upload-preview-info">
+                    <span className="upload-preview-name">
+                      {fileName || (image.startsWith('data:') ? 'Custom Uploaded Photo' : image.split('/').pop())}
+                    </span>
+                    <span className="upload-preview-status">
+                      <CheckCircle2 size={12} color="var(--success)" />
+                      Ready to use
+                    </span>
+                  </div>
+                  <div className="upload-preview-actions">
+                    <button
+                      type="button"
+                      className="btn-preview-action"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      Change
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-preview-action delete"
+                      onClick={() => {
+                        setImage('');
+                        setRawFile(null);
+                        setFileName('');
+                      }}
+                      title="Remove photo"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
                 </div>
-
-                <select
-                  className="modal-input"
-                  value={image}
-                  onChange={(e) => setImage(e.target.value)}
+              ) : (
+                <div
+                  className={`image-upload-dropzone ${isDragging ? 'is-dragging' : ''}`}
+                  onClick={() => fileInputRef.current?.click()}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    setIsDragging(true);
+                  }}
+                  onDragLeave={() => setIsDragging(false)}
+                  onDrop={handleDrop}
+                  role="button"
+                  tabIndex={0}
                 >
-                  {availableImages.map((img) => (
-                    <option key={img.path} value={img.path}>
-                      {img.label} ({img.path.split('/').pop()})
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
+                  <div className="dropzone-icon">
+                    <UploadCloud size={24} />
+                  </div>
+                  <div className="dropzone-text">
+                    <strong className="dropzone-title">
+                      Click to browse device library
+                    </strong>
+                    <span className="dropzone-hint">
+                      or drag and drop photo here &bull; PNG, JPG, WEBP (Max 5MB)
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {uploadError && (
+                <div className="upload-error-pill">
+                  <AlertCircle size={13} />
+                  <span>{uploadError}</span>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Item Name */}
