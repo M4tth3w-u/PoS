@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import LoginView from './components/LoginView';
 import AdminView from './components/AdminView';
 import CashierView from './components/CashierView';
+import { apiUrl } from './config/api';
 
 const LOGIN_STORAGE_KEY = 'pos_login_response';
 
@@ -15,6 +16,40 @@ function App() {
       return null;
     }
   });
+  const isAdmin = loginResponse?.data?.id_role === 1 || loginResponse?.data?.id_role === '1';
+  const [isCheckingSession, setIsCheckingSession] = useState(isAdmin);
+
+  useEffect(() => {
+    if (!isAdmin) return;
+
+    let cancelled = false;
+
+    const validateSession = async () => {
+      try {
+        const response = await fetch(apiUrl('/admin/user'), {
+          method: 'GET',
+          credentials: 'include',
+          headers: { Accept: 'application/json' },
+        });
+
+        const isLoginRedirect = response.url.includes('/auth/') || response.url.includes('/login');
+
+        if (!cancelled && (response.status === 401 || response.status === 403 || isLoginRedirect)) {
+          setLoginResponse(null);
+        }
+      } catch {
+        // Keep the local session when the backend is temporarily unreachable.
+      } finally {
+        if (!cancelled) setIsCheckingSession(false);
+      }
+    };
+
+    validateSession();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isAdmin]);
 
   useEffect(() => {
     if (loginResponse) {
@@ -27,6 +62,8 @@ function App() {
   const handleLogout = () => {
     setLoginResponse(null);
   };
+
+  if (isCheckingSession) return null;
 
   if (loginResponse?.data?.id_role === 1 || loginResponse?.data?.id_role === '1') {
     return <AdminView user={loginResponse.data} onLogout={handleLogout} />;

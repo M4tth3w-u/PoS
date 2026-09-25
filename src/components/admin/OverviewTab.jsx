@@ -222,10 +222,6 @@ export default function OverviewTab({
                         </div>
                       </div>
                     </div>
-
-                    <div className="radar-card-right">
-                      <span className="prodoco-stat-item">Status ID: {item.statusId}</span>
-                    </div>
                   </div>
                 );
               })}

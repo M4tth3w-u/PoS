@@ -72,6 +72,7 @@ export default function LoginForm({ lang, setLang, onLoginSuccess }) {
     try {
       const response = await fetch(apiUrl('/auth/action_login'), {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
